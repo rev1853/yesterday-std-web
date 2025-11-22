@@ -10,6 +10,7 @@ class AlbumAccess extends Model
 {
     use HasFactory, HasUuids;
 
+    protected $table = 'album_access';
     protected $fillable = [
         'album_id',
         'client_id',
