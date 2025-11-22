@@ -93,6 +93,14 @@ const mapPhoto = (photo: any): Photo => ({
   albumId: photo.album_id,
 });
 
+const mapUser = (apiUser: any): User => ({
+  id: apiUser.id?.toString?.() ?? apiUser.id,
+  name: apiUser.name,
+  email: apiUser.email,
+  role: apiUser.role ?? null,
+  avatar: apiUser.avatar_url,
+});
+
 const mapAlbum = (album: any): Album => ({
   id: album.id,
   title: album.title,
@@ -157,7 +165,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       if (currentUser?.role === 'admin') {
         const { data: usersRes } = await api.get('/users');
-        setUsers(usersRes);
+        setUsers(usersRes.map(mapUser));
       }
     } finally {
       setLoading(false);
@@ -167,8 +175,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const fetchCurrentUser = useCallback(async () => {
     try {
       const { data } = await api.get('/auth/me');
-      setUser(data);
-      await fetchAll(data);
+      const mappedUser = mapUser(data);
+      setUser(mappedUser);
+      await fetchAll(mappedUser);
     } catch (error) {
       setAuthToken(undefined);
       setUser(null);
@@ -178,17 +187,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string): Promise<User> => {
     const { data } = await api.post('/auth/login', { email, password });
     setAuthToken(data.token);
-    setUser(data.user);
-    await fetchAll(data.user);
-    return data.user;
+    const mappedUser = mapUser(data.user);
+    setUser(mappedUser);
+    await fetchAll(mappedUser);
+    return mappedUser;
   };
 
   const signUp = async (name: string, email: string, password: string): Promise<User> => {
     const { data } = await api.post('/auth/register', { name, email, password, role: 'client' });
     setAuthToken(data.token);
-    setUser(data.user);
-    await fetchAll(data.user);
-    return data.user;
+    const mappedUser = mapUser(data.user);
+    setUser(mappedUser);
+    await fetchAll(mappedUser);
+    return mappedUser;
   };
 
   const logout = async () => {
@@ -311,8 +322,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addUser = async (userInput: { name: string; email: string; password: string; role: 'admin' | 'creator' | 'client' }) => {
     const { data } = await api.post('/users', userInput);
-    setUsers(prev => [...prev, data]);
-    return data;
+    const mapped = mapUser(data);
+    setUsers(prev => [...prev, mapped]);
+    return mapped;
   };
 
   const deleteUser = async (id: string) => {
