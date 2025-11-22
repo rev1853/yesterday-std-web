@@ -18,8 +18,8 @@ export default function CreatorDashboard() {
     myAlbums.some(album => album.id === sub.albumId)
   );
 
-  const handleGenerateLink = (albumId: string) => {
-    const inviteCode = generateInviteLink(albumId);
+  const handleGenerateLink = async (albumId: string) => {
+    const inviteCode = await generateInviteLink(albumId);
     const inviteUrl = `${window.location.origin}/invitation/${inviteCode}`;
     navigator.clipboard.writeText(inviteUrl);
     setCopiedCode(albumId);

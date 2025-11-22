@@ -5,6 +5,8 @@ import { useToast } from '../components/ToastContainer';
 import Navbar from '../components/Navbar';
 import { Upload, X, Plus } from 'lucide-react';
 
+type LocalPhoto = { url: string; file?: File };
+
 export default function CreateAlbum() {
   const { user, addAlbum } = useApp();
   const { showToast } = useToast();
@@ -12,57 +14,43 @@ export default function CreateAlbum() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<LocalPhoto[]>([]);
   const [photoUrl, setPhotoUrl] = useState('');
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
       const fileArray = Array.from(files);
-      const imageUrls = fileArray.map(file => URL.createObjectURL(file));
-      setPhotos([...photos, ...imageUrls]);
-      showToast('success', `${fileArray.length} images added successfully!`);
-    }
-  };
-
-  const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const fileArray = Array.from(files);
-      // Filter only image files
       const imageFiles = fileArray.filter(file => file.type.startsWith('image/'));
-      
       if (imageFiles.length === 0) {
-        showToast('error', 'No images found in the selected folder');
+        showToast('error', 'No images found');
         return;
       }
-      
-      const imageUrls = imageFiles.map(file => URL.createObjectURL(file));
-      setPhotos([...photos, ...imageUrls]);
-      
-      const totalFiles = fileArray.length;
-      const skippedFiles = totalFiles - imageFiles.length;
-      
-      if (skippedFiles > 0) {
-        showToast('success', `${imageFiles.length} images added successfully! (${skippedFiles} non-image files skipped)`);
-      } else {
-        showToast('success', `${imageFiles.length} images added successfully from folder!`);
-      }
+      const newPhotos = imageFiles.map(file => ({
+        url: URL.createObjectURL(file),
+        file,
+      }));
+      setPhotos(prev => [...prev, ...newPhotos]);
+      showToast('success', `${fileArray.length} images added successfully!`);
     }
   };
 
   const handleAddPhoto = () => {
     if (photoUrl.trim()) {
-      setPhotos([...photos, photoUrl.trim()]);
+      setPhotos([...photos, { url: photoUrl.trim() }]);
       setPhotoUrl('');
     }
   };
 
   const handleRemovePhoto = (index: number) => {
+    const toRemove = photos[index];
+    if (toRemove?.file) {
+      URL.revokeObjectURL(toRemove.url);
+    }
     setPhotos(photos.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) return;
@@ -71,18 +59,14 @@ export default function CreateAlbum() {
       title,
       description,
       date,
-      coverImage: photos[0] || 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&q=80',
+      coverImage: photos.find(p => !p.file)?.url || '',
       creatorId: user.id,
       creatorName: user.name,
       status: 'active' as const,
-      photos: photos.map((url, index) => ({
-        id: `photo-${Date.now()}-${index}`,
-        url,
-        albumId: '',
-      })),
+      photos,
     };
 
-    addAlbum(newAlbum);
+    await addAlbum(newAlbum);
     navigate('/creator');
     showToast('success', 'Album created successfully!');
   };
@@ -98,7 +82,7 @@ export default function CreateAlbum() {
   ];
 
   const addSamplePhotos = () => {
-    setPhotos(samplePhotos);
+    setPhotos(samplePhotos.map(url => ({ url })));
   };
 
   return (
@@ -216,7 +200,7 @@ export default function CreateAlbum() {
                     webkitdirectory=""
                     directory=""
                     multiple
-                    onChange={handleFolderSelect}
+                    onChange={handleFileSelect}
                     className="hidden"
                   />
                 </label>
@@ -227,7 +211,7 @@ export default function CreateAlbum() {
                   {photos.map((photo, index) => (
                     <div key={index} className="relative group">
                       <img
-                        src={photo}
+                        src={photo.url}
                         alt={`Photo ${index + 1}`}
                         className="w-full h-[200px] object-cover rounded-xl"
                       />

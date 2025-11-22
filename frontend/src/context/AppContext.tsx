@@ -1,8 +1,9 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import api, { setAuthToken } from '../lib/api';
 
 type UserRole = 'admin' | 'creator' | 'client' | null;
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
@@ -10,7 +11,7 @@ interface User {
   avatar?: string;
 }
 
-interface Album {
+export interface Album {
   id: string;
   title: string;
   description: string;
@@ -23,14 +24,14 @@ interface Album {
   status: 'active' | 'archived' | 'pending';
 }
 
-interface Photo {
+export interface Photo {
   id: string;
   url: string;
   albumId: string;
   selected?: boolean;
 }
 
-interface Submission {
+export interface Submission {
   id: string;
   albumId: string;
   clientId: string;
@@ -42,160 +43,239 @@ interface Submission {
 
 interface AppContextType {
   user: User | null;
-  login: (email: string, password: string, role: UserRole) => void;
-  logout: () => void;
+  login: (email: string, password: string, role?: UserRole) => Promise<User>;
+  logout: () => Promise<void>;
   albums: Album[];
-  addAlbum: (album: Omit<Album, 'id'>) => void;
-  updateAlbum: (id: string, album: Partial<Album>) => void;
-  deleteAlbum: (id: string) => void;
+  addAlbum: (album: NewAlbumInput) => Promise<Album>;
+  updateAlbum: (id: string, album: Partial<Album>) => Promise<Album>;
+  deleteAlbum: (id: string) => Promise<void>;
   getAlbum: (id: string) => Album | undefined;
-  generateInviteLink: (albumId: string) => string;
+  generateInviteLink: (albumId: string) => Promise<string>;
   submissions: Submission[];
-  submitSelection: (albumId: string, photoIds: string[]) => void;
+  submitSelection: (albumId: string, photoIds: string[]) => Promise<Submission>;
   users: User[];
-  updateUser: (id: string, updates: Partial<User>) => void;
-  deleteUser: (id: string) => void;
+  updateUser: (id: string, updates: Partial<User>) => Promise<User>;
+  deleteUser: (id: string) => Promise<void>;
+  refreshData: () => Promise<void>;
+  uploadPhotos: (albumId: string, files: File[]) => Promise<Photo[]>;
+  loading: boolean;
 }
+
+export type NewAlbumPhotoInput = { url: string; file?: File };
+export type NewAlbumInput = Omit<Album, 'id' | 'photos'> & {
+  photos?: NewAlbumPhotoInput[];
+  files?: File[];
+};
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const mapPhoto = (photo: any): Photo => ({
+  id: photo.id,
+  url: photo.path,
+  albumId: photo.album_id,
+});
+
+const mapAlbum = (album: any): Album => ({
+  id: album.id,
+  title: album.title,
+  description: album.description ?? '',
+  date: album.event_date ?? '',
+  coverImage: album.cover_image_url ?? '',
+  creatorId: album.creator_id?.toString?.() ?? '',
+  creatorName: album.creator?.name ?? '',
+  photos: (album.photos ?? []).map(mapPhoto),
+  inviteCode: album.invite_code ?? undefined,
+  status: (album.status as Album['status']) ?? 'active',
+});
+
+const mapSubmission = (submission: any): Submission => ({
+  id: submission.id,
+  albumId: submission.album_id,
+  clientId: submission.client_id?.toString?.() ?? '',
+  clientName: submission.client?.name ?? '',
+  selectedPhotos: (submission.photos ?? []).map((p: any) => p.id),
+  submittedAt: submission.submitted_at ?? '',
+  status: submission.status as Submission['status'],
+});
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([
-    { id: '1', name: 'Admin User', email: 'admin@example.com', role: 'admin' },
-    { id: '2', name: 'John Photographer', email: 'john@example.com', role: 'creator' },
-    { id: '3', name: 'Jane Client', email: 'jane@example.com', role: 'client' },
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const [albums, setAlbums] = useState<Album[]>([
-    {
-      id: '1',
-      title: 'Wedding Day - Arthur & Sadie',
-      description: 'Beautiful wedding ceremony',
-      date: '29 October 2025',
-      coverImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80',
-      creatorId: '2',
-      creatorName: 'John Photographer',
-      inviteCode: 'WEDDING2025',
-      status: 'active',
-      photos: [
-        { id: 'p1', url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80', albumId: '1' },
-        { id: 'p2', url: 'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80', albumId: '1' },
-        { id: 'p3', url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80', albumId: '1' },
-        { id: 'p4', url: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80', albumId: '1' },
-        { id: 'p5', url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80', albumId: '1' },
-        { id: 'p6', url: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80', albumId: '1' },
-        { id: 'p7', url: 'https://images.unsplash.com/photo-1460978812857-470ed1c77af0?w=800&q=80', albumId: '1' },
-        { id: 'p8', url: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&q=80', albumId: '1' },
-      ],
-    },
-    {
-      id: '2',
-      title: 'Graduation - Claire',
-      description: 'Graduation ceremony memories',
-      date: '20/11/2025',
-      coverImage: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80',
-      creatorId: '2',
-      creatorName: 'John Photographer',
-      inviteCode: 'GRAD2025',
-      status: 'active',
-      photos: [
-        { id: 'p9', url: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80', albumId: '2' },
-        { id: 'p10', url: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&q=80', albumId: '2' },
-        { id: 'p11', url: 'https://images.unsplash.com/photo-1627556704302-624286467c65?w=800&q=80', albumId: '2' },
-        { id: 'p12', url: 'https://images.unsplash.com/photo-1513223564736-60e4e563f82d?w=800&q=80', albumId: '2' },
-      ],
-    },
-    {
-      id: '3',
-      title: 'Birthday Party - Emma',
-      description: 'Sweet 16 celebration',
-      date: '15/11/2025',
-      coverImage: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80',
-      creatorId: '2',
-      creatorName: 'John Photographer',
-      status: 'active',
-      photos: [
-        { id: 'p13', url: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80', albumId: '3' },
-        { id: 'p14', url: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&q=80', albumId: '3' },
-        { id: 'p15', url: 'https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=800&q=80', albumId: '3' },
-      ],
-    },
-  ]);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setAuthToken(token);
+      fetchCurrentUser();
+    }
+  }, []);
 
-  const [submissions, setSubmissions] = useState<Submission[]>([
-    {
-      id: 's1',
-      albumId: '1',
-      clientId: '3',
-      clientName: 'Jane Client',
-      selectedPhotos: ['p1', 'p3', 'p5'],
-      submittedAt: '2025-11-20T10:30:00Z',
-      status: 'pending',
-    },
-  ]);
-
-  const login = (email: string, password: string, role: UserRole) => {
-    const mockUser: User = {
-      id: role === 'admin' ? '1' : role === 'creator' ? '2' : '3',
-      name: role === 'admin' ? 'Admin User' : role === 'creator' ? 'John Photographer' : 'Jane Client',
-      email,
-      role,
-    };
-    setUser(mockUser);
+  const fetchCurrentUser = async () => {
+    try {
+      const { data } = await api.get('/auth/me');
+      setUser(data);
+      await fetchAll(data);
+    } catch (error) {
+      setAuthToken(undefined);
+      setUser(null);
+    }
   };
 
-  const logout = () => {
+  const fetchAll = async (currentUser: User | null = user) => {
+    setLoading(true);
+    try {
+      const [albumRes, submissionRes] = await Promise.all([
+        api.get('/albums'),
+        api.get('/submissions'),
+      ]);
+
+      setAlbums(albumRes.data.map(mapAlbum));
+      setSubmissions(submissionRes.data.map(mapSubmission));
+
+      if (currentUser?.role === 'admin') {
+        const { data: usersRes } = await api.get('/users');
+        setUsers(usersRes);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (email: string, password: string, _role?: UserRole): Promise<User> => {
+    const { data } = await api.post('/auth/login', { email, password });
+    setAuthToken(data.token);
+    setUser(data.user);
+    await fetchAll(data.user);
+    return data.user;
+  };
+
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      // ignore
+    }
+    setAuthToken(undefined);
     setUser(null);
+    setAlbums([]);
+    setSubmissions([]);
+    setUsers([]);
   };
 
-  const addAlbum = (album: Omit<Album, 'id'>) => {
-    const newAlbum: Album = {
-      ...album,
-      id: `album-${Date.now()}`,
+  const uploadPhotos = async (albumId: string, files: File[]) => {
+    if (!files.length) return [];
+
+    const formData = new FormData();
+    files.forEach(file => formData.append('files[]', file));
+
+    const { data } = await api.post(`/albums/${albumId}/photos`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    return data.map(mapPhoto) as Photo[];
+  };
+
+  const addAlbum = async (album: NewAlbumInput) => {
+    const payload = {
+      title: album.title,
+      description: album.description,
+      event_date: album.date,
+      cover_image_url: album.coverImage,
+      status: album.status,
     };
-    setAlbums([...albums, newAlbum]);
+    const { data } = await api.post('/albums', payload);
+    let mapped = mapAlbum(data);
+
+    const remotePhotos = album.photos
+      ?.filter(p => !p.file && p.url)
+      ?.map(p => ({
+        path: p.url,
+      }));
+
+    const filesFromPhotos = album.photos?.filter(p => p.file).map(p => p.file as File);
+    const allFiles = [...(album.files || []), ...(filesFromPhotos || [])];
+
+    if (remotePhotos?.length) {
+      const { data: createdPhotos } = await api.post(`/albums/${mapped.id}/photos`, {
+        photos: remotePhotos,
+      });
+      mapped = { ...mapped, photos: createdPhotos.map(mapPhoto) };
+    }
+
+    if (allFiles.length) {
+      const uploaded = await uploadPhotos(mapped.id, allFiles);
+      mapped = { ...mapped, photos: [...(mapped.photos || []), ...uploaded] };
+    }
+
+    if (!mapped.coverImage && mapped.photos[0]) {
+      const coverUrl = mapped.photos[0].url;
+      const { data: updatedAlbum } = await api.put(`/albums/${mapped.id}`, {
+        cover_image_url: coverUrl,
+      });
+      mapped = mapAlbum(updatedAlbum);
+    }
+
+    setAlbums(prev => [...prev, mapped]);
+    return mapped;
   };
 
-  const updateAlbum = (id: string, updates: Partial<Album>) => {
-    setAlbums(albums.map(album => album.id === id ? { ...album, ...updates } : album));
+  const updateAlbum = async (id: string, album: Partial<Album>) => {
+    const payload: Record<string, any> = {};
+    if (album.title !== undefined) payload.title = album.title;
+    if (album.description !== undefined) payload.description = album.description;
+    if (album.date !== undefined) payload.event_date = album.date;
+    if (album.coverImage !== undefined) payload.cover_image_url = album.coverImage;
+    if (album.status !== undefined) payload.status = album.status;
+
+    const { data } = await api.put(`/albums/${id}`, payload);
+    const mapped = mapAlbum(data);
+    setAlbums(prev => prev.map(a => (a.id === id ? mapped : a)));
+    return mapped;
   };
 
-  const deleteAlbum = (id: string) => {
-    setAlbums(albums.filter(album => album.id !== id));
+  const deleteAlbum = async (id: string) => {
+    await api.delete(`/albums/${id}`);
+    setAlbums(prev => prev.filter(a => a.id !== id));
   };
 
   const getAlbum = (id: string) => {
     return albums.find(album => album.id === id);
   };
 
-  const generateInviteLink = (albumId: string) => {
-    const inviteCode = `INVITE-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    updateAlbum(albumId, { inviteCode });
-    return inviteCode;
+  const generateInviteLink = async (albumId: string) => {
+    const { data } = await api.post(`/albums/${albumId}/invite`);
+    setAlbums(prev =>
+      prev.map(a => (a.id === albumId ? { ...a, inviteCode: data.invite_code } : a)),
+    );
+    return data.invite_code as string;
   };
 
-  const submitSelection = (albumId: string, photoIds: string[]) => {
-    if (!user) return;
-    
-    const newSubmission: Submission = {
-      id: `sub-${Date.now()}`,
-      albumId,
-      clientId: user.id,
-      clientName: user.name,
-      selectedPhotos: photoIds,
-      submittedAt: new Date().toISOString(),
-      status: 'pending',
-    };
-    setSubmissions([...submissions, newSubmission]);
+  const submitSelection = async (albumId: string, photoIds: string[]) => {
+    const { data } = await api.post('/submissions', {
+      album_id: albumId,
+      selected_photos: photoIds,
+    });
+    const mapped = mapSubmission(data);
+    setSubmissions(prev => [...prev, mapped]);
+    return mapped;
   };
 
-  const updateUser = (id: string, updates: Partial<User>) => {
-    setUsers(users.map(u => u.id === id ? { ...u, ...updates } : u));
+  const updateUser = async (id: string, updates: Partial<User>) => {
+    const { data } = await api.put(`/users/${id}`, updates);
+    setUsers(prev => prev.map(u => (u.id === id ? data : u)));
+    return data;
   };
 
-  const deleteUser = (id: string) => {
-    setUsers(users.filter(u => u.id !== id));
+  const deleteUser = async (id: string) => {
+    await api.delete(`/users/${id}`);
+    setUsers(prev => prev.filter(u => u.id !== id));
+  };
+
+  const refreshData = async () => {
+    await fetchAll();
   };
 
   return (
@@ -215,6 +295,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         users,
         updateUser,
         deleteUser,
+        refreshData,
+        uploadPhotos,
+        loading,
       }}
     >
       {children}

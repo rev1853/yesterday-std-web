@@ -33,9 +33,9 @@ export default function AlbumDetail() {
     setSelectedPhotos(newSelected);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectedPhotos.size === 0) return;
-    submitSelection(album.id, Array.from(selectedPhotos));
+    await submitSelection(album.id, Array.from(selectedPhotos));
     setShowSuccess(true);
     setTimeout(() => {
       navigate('/client');

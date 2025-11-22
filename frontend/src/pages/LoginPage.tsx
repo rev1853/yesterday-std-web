@@ -8,23 +8,36 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState<'admin' | 'creator' | 'client'>('client');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const { login } = useApp();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(email, password, selectedRole);
-    
-    switch (selectedRole) {
-      case 'admin':
-        navigate('/admin');
-        break;
-      case 'creator':
-        navigate('/creator');
-        break;
-      case 'client':
-        navigate('/client');
-        break;
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const loggedIn = await login(email, password, selectedRole);
+      const role = loggedIn.role;
+
+      switch (role) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'creator':
+          navigate('/creator');
+          break;
+        case 'client':
+        default:
+          navigate('/client');
+          break;
+      }
+    } catch (err) {
+      setError('Invalid credentials. Try admin@/creator@/client@example.com with password "password".');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -112,15 +125,20 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full py-4 bg-neutral-100 text-[#0d0d0d] rounded-xl font-['Inter'] font-extrabold text-[16px] tracking-[-0.8px] hover:bg-neutral-200 transition-colors"
+              disabled={submitting}
+              className="w-full py-4 bg-neutral-100 text-[#0d0d0d] rounded-xl font-['Inter'] font-extrabold text-[16px] tracking-[-0.8px] hover:bg-neutral-200 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Sign In
+              {submitting ? 'Signing In...' : 'Sign In'}
             </button>
 
             <div className="text-center mt-6">
-              <p className="font-['Inter'] text-[12px] text-neutral-500">
-                Demo mode: Any email/password combination works
-              </p>
+              {error ? (
+                <p className="font-['Inter'] text-[12px] text-red-400">{error}</p>
+              ) : (
+                <p className="font-['Inter'] text-[12px] text-neutral-500">
+                  Seeded demo accounts: admin@example.com, creator@example.com, client@example.com (password: password)
+                </p>
+              )}
             </div>
           </form>
         </div>
