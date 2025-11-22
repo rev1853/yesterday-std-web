@@ -78,8 +78,8 @@ export default function SignupPage() {
 
     try {
       await signUp(formData.name, formData.email, formData.password);
-      showToast('success', 'Account created successfully!');
-      navigate('/client');
+      showToast('success', 'Account created successfully! Please log in.');
+      navigate('/login');
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Signup failed';
       showToast('error', message);

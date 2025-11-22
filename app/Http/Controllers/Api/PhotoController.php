@@ -38,10 +38,9 @@ class PhotoController extends Controller
             foreach ($request->file('files') as $file) {
                 $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
                 $storedPath = $file->storeAs("albums/{$album->id}", $filename, 'public');
-                $url = Storage::disk('public')->url($storedPath);
 
                 $created[] = $album->photos()->create([
-                    'path' => $url,
+                    'path' => $storedPath,
                     'caption' => null,
                     'metadata' => [
                         'original_name' => $file->getClientOriginalName(),

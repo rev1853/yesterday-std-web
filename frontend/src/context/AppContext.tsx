@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import api, { setAuthToken } from '../lib/api';
 
 type UserRole = 'admin' | 'creator' | 'client' | null;
@@ -87,7 +87,9 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const mapPhoto = (photo: any): Photo => ({
   id: photo.id,
-  url: photo.path,
+  url: photo.path?.startsWith('http')
+    ? photo.path
+    : `${import.meta.env.VITE_API_URL?.replace(/\/api$/, '') ?? 'http://localhost:8000'}/storage/${photo.path}`,
   albumId: photo.album_id,
 });
 
@@ -140,18 +142,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const fetchCurrentUser = async () => {
-    try {
-      const { data } = await api.get('/auth/me');
-      setUser(data);
-      await fetchAll(data);
-    } catch (error) {
-      setAuthToken(undefined);
-      setUser(null);
-    }
-  };
-
-  const fetchAll = async (currentUser: User | null = user) => {
+  const fetchAll = useCallback(async (currentUser: User | null = user) => {
     setLoading(true);
     try {
       const [albumRes, submissionRes, testimonialRes] = await Promise.all([
@@ -171,7 +162,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  const fetchCurrentUser = useCallback(async () => {
+    try {
+      const { data } = await api.get('/auth/me');
+      setUser(data);
+      await fetchAll(data);
+    } catch (error) {
+      setAuthToken(undefined);
+      setUser(null);
+    }
+  }, [fetchAll]);
 
   const login = async (email: string, password: string): Promise<User> => {
     const { data } = await api.post('/auth/login', { email, password });
@@ -348,9 +350,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTestimonials(prev => prev.filter(t => t.id !== id));
   };
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     await fetchAll();
-  };
+  }, [fetchAll]);
 
   return (
     <AppContext.Provider
