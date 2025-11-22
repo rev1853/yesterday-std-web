@@ -2,12 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Navbar from '../components/Navbar';
-import { User, Camera, Shield } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedRole, setSelectedRole] = useState<'admin' | 'creator' | 'client'>('client');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const { login } = useApp();
@@ -19,7 +17,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const loggedIn = await login(email, password, selectedRole);
+      const loggedIn = await login(email, password);
       const role = loggedIn.role;
 
       switch (role) {
@@ -41,12 +39,6 @@ export default function LoginPage() {
     }
   };
 
-  const roles = [
-    { value: 'client', label: 'Client', icon: User, desc: 'View and select photos from your albums' },
-    { value: 'creator', label: 'Creator', icon: Camera, desc: 'Upload albums and manage photo selections' },
-    { value: 'admin', label: 'Admin', icon: Shield, desc: 'Manage users and moderate content' },
-  ];
-
   return (
     <div className="min-h-screen bg-[#0d0d0d]">
       <Navbar />
@@ -63,38 +55,6 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4 mb-8">
-              <p className="font-['Inter'] font-medium text-[16px] text-neutral-100 mb-4">
-                Select your role:
-              </p>
-              <div className="grid grid-cols-3 gap-4">
-                {roles.map((role) => (
-                  <button
-                    key={role.value}
-                    type="button"
-                    onClick={() => setSelectedRole(role.value as any)}
-                    className={`p-6 rounded-xl border-2 transition-all ${
-                      selectedRole === role.value
-                        ? 'border-neutral-100 bg-neutral-100/5'
-                        : 'border-neutral-800 bg-neutral-900/50 hover:border-neutral-700'
-                    }`}
-                  >
-                    <role.icon className={`w-8 h-8 mb-3 mx-auto ${
-                      selectedRole === role.value ? 'text-neutral-100' : 'text-neutral-500'
-                    }`} />
-                    <p className={`font-['Inter'] font-medium text-[14px] mb-1 ${
-                      selectedRole === role.value ? 'text-neutral-100' : 'text-neutral-400'
-                    }`}>
-                      {role.label}
-                    </p>
-                    <p className="font-['Inter'] text-[10px] text-neutral-600">
-                      {role.desc}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             <div>
               <label className="block font-['Inter'] font-medium text-[14px] text-neutral-100 mb-2">
                 Email

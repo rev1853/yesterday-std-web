@@ -43,7 +43,7 @@ export interface Submission {
 
 interface AppContextType {
   user: User | null;
-  login: (email: string, password: string, role?: UserRole) => Promise<User>;
+  login: (email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
   albums: Album[];
   addAlbum: (album: NewAlbumInput) => Promise<Album>;
@@ -144,7 +144,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string, _role?: UserRole): Promise<User> => {
+  const login = async (email: string, password: string): Promise<User> => {
     const { data } = await api.post('/auth/login', { email, password });
     setAuthToken(data.token);
     setUser(data.user);
