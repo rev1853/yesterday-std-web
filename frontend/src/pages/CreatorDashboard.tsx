@@ -11,9 +11,10 @@ export default function CreatorDashboard() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
-    // Ensure we have the latest albums/submissions when landing here
-    refreshData().catch(() => null);
-  }, [refreshData]);
+    if (user?.role === 'creator') {
+      refreshData().catch(() => null);
+    }
+  }, [user?.id, user?.role, refreshData]);
   
   // Get creator's albums
   const myAlbums = albums.filter(album => album.creatorId === user?.id);
