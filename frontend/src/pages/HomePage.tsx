@@ -1,63 +1,37 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useApp } from '../context/AppContext';
+import api from '../lib/api';
 import { Camera, CheckCircle, Users, Star, ArrowRight } from 'lucide-react';
+
+type LandingTestimonial = {
+  id: string;
+  client_name: string;
+  album_title: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+};
 
 export default function HomePage() {
   const { albums, user } = useApp();
   const publicAlbums = albums.filter(a => a.status === 'active').slice(0, 6);
+  const [testimonials, setTestimonials] = useState<LandingTestimonial[]>([]);
 
-  const testimonials = [
-    {
-      id: 1,
-      name: 'Sarah Johnson',
-      role: 'Bride',
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80',
-      rating: 5,
-      text: 'UrPictura made selecting our wedding photos so easy! My photographer shared the album with me, and I could pick my favorites from anywhere. The process was seamless and intuitive.',
-    },
-    {
-      id: 2,
-      name: 'Michael Chen',
-      role: 'Professional Photographer',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
-      rating: 5,
-      text: 'As a wedding photographer, this platform has transformed my workflow. Clients can easily select their favorite shots, and I can focus on editing what they truly want. Game changer!',
-    },
-    {
-      id: 3,
-      name: 'Emily Rodriguez',
-      role: 'Event Organizer',
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80',
-      rating: 5,
-      text: "We use UrPictura for all our corporate events. The ability to share albums privately and have clients select their preferred photos has streamlined our entire process. Highly recommend!",
-    },
-    {
-      id: 4,
-      name: 'David Thompson',
-      role: 'Portrait Photographer',
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80',
-      rating: 5,
-      text: 'The invitation link feature is brilliant! My clients love how they can review and select photos at their own pace. No more endless email chains with photo selections.',
-    },
-    {
-      id: 5,
-      name: 'Jessica Martinez',
-      role: 'Client',
-      image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=200&q=80',
-      rating: 5,
-      text: "I loved being able to take my time selecting my graduation photos. The interface is beautiful and makes it easy to compare shots side by side. Such a professional experience!",
-    },
-    {
-      id: 6,
-      name: 'Robert Kim',
-      role: 'Wedding Photographer',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80',
-      rating: 5,
-      text: 'This platform has saved me countless hours. The dashboard shows all pending selections at a glance, and downloading chosen photos is incredibly fast. Perfect for busy photographers!',
-    },
-  ];
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const { data } = await api.get('/public/testimonials', { params: { limit: 6 } });
+        setTestimonials(data);
+      } catch (error) {
+        setTestimonials([]);
+      }
+    };
+
+    fetchTestimonials();
+  }, []);
 
   const features = [
     {
@@ -249,40 +223,49 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-8">
-          {testimonials.map((testimonial) => (
-            <div
-              key={testimonial.id}
-              className="bg-[#1e1e1e] rounded-xl p-8 border-2 border-neutral-800 hover:border-neutral-700 transition-all"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <img
-                  src={testimonial.image}
-                  alt={testimonial.name}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-                <div className="flex-1">
-                  <h4 className="font-['Inter'] font-extrabold text-[16px] text-neutral-100 tracking-[-0.8px] mb-1">
-                    {testimonial.name}
-                  </h4>
-                  <p className="font-['Inter'] text-[12px] text-neutral-400">
-                    {testimonial.role}
-                  </p>
+        {testimonials.length === 0 ? (
+          <div className="bg-[#1e1e1e] rounded-xl p-12 border-2 border-neutral-800 text-center">
+            <p className="font-['Inter'] text-[18px] text-neutral-400">
+              Reviews will appear here soon.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-8">
+            {testimonials.map((testimonial) => (
+              <div
+                key={testimonial.id}
+                className="bg-[#1e1e1e] rounded-xl p-8 border-2 border-neutral-800 hover:border-neutral-700 transition-all"
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white flex items-center justify-center font-['Inter'] font-extrabold text-[18px]">
+                    {testimonial.client_name?.[0] || 'U'}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-['Inter'] font-extrabold text-[16px] text-neutral-100 tracking-[-0.8px] mb-1">
+                      {testimonial.client_name || 'Anonymous'}
+                    </h4>
+                    <p className="font-['Inter'] text-[12px] text-neutral-400">
+                      {testimonial.album_title ? `On "${testimonial.album_title}"` : 'Happy client'}
+                    </p>
+                  </div>
                 </div>
+                
+                <div className="flex gap-1 mb-4">
+                  {[1,2,3,4,5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-4 h-4 ${star <= testimonial.rating ? 'fill-yellow-500 text-yellow-500' : 'text-neutral-700'}`}
+                    />
+                  ))}
+                </div>
+                
+                <p className="font-['Inter'] text-[14px] text-neutral-300 leading-relaxed">
+                  "{testimonial.comment || 'Great experience!'}"
+                </p>
               </div>
-              
-              <div className="flex gap-1 mb-4">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                ))}
-              </div>
-              
-              <p className="font-['Inter'] text-[14px] text-neutral-300 leading-relaxed">
-                "{testimonial.text}"
-              </p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* CTA Section */}

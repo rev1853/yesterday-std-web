@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PhotoController;
 use App\Http\Controllers\Api\SubmissionController;
+use App\Http\Controllers\Api\TestimonialController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,10 +14,13 @@ Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
 });
 
+Route::get('public/testimonials', [TestimonialController::class, 'publicLatest']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/me', [AuthController::class, 'me']);
 
+    Route::post('users', [UserController::class, 'store']);
     Route::get('users', [UserController::class, 'index']);
     Route::get('users/{user}', [UserController::class, 'show']);
     Route::put('users/{user}', [UserController::class, 'update']);
@@ -39,6 +43,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('submissions', [SubmissionController::class, 'store']);
     Route::put('submissions/{submission}', [SubmissionController::class, 'update']);
     Route::get('submissions/{submission}/download', [SubmissionController::class, 'download']);
+
+    Route::get('testimonials', [TestimonialController::class, 'index']);
+    Route::post('albums/{album}/testimonials', [TestimonialController::class, 'store']);
+    Route::put('testimonials/{testimonial}', [TestimonialController::class, 'update']);
+    Route::delete('testimonials/{testimonial}', [TestimonialController::class, 'destroy']);
 
     Route::get('analytics/platform', [AnalyticsController::class, 'platform']);
     Route::get('analytics/creator/{creator}', [AnalyticsController::class, 'creator']);

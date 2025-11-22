@@ -24,6 +24,33 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+    public function store(Request $request)
+    {
+        $this->authorizeAdmin($request);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+            'password' => ['required', 'string', 'min:8'],
+            'role' => ['required', Rule::in(['admin', 'creator', 'client'])],
+            'avatar_url' => ['sometimes', 'nullable', 'string', 'max:500'],
+        ]);
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role' => $data['role'],
+            'avatar_url' => $data['avatar_url'] ?? null,
+        ]);
+
+        $this->logActivity($request, 'create_user', 'user', (string) $user->id, [
+            'role' => $user->role,
+        ]);
+
+        return response()->json($user, 201);
+    }
+
     public function update(Request $request, User $user)
     {
         $this->authorizeSelfOrAdmin($request, $user);

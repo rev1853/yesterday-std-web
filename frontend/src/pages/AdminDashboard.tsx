@@ -2,35 +2,17 @@ import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Users, Camera, Trash2, Shield, User as UserIcon, TrendingUp, Activity, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Users, Camera, Trash2, Shield, TrendingUp, Activity, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import UserManagement from '../components/UserManagement';
 
 export default function AdminDashboard() {
-  const { users, albums, submissions, updateUser, deleteUser, deleteAlbum } = useApp();
+  const { users, albums, submissions, deleteAlbum } = useApp();
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'albums' | 'submissions'>('overview');
-
-  const handleDeleteUser = (userId: string) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-      deleteUser(userId);
-    }
-  };
 
   const handleDeleteAlbum = (albumId: string) => {
     if (confirm('Are you sure you want to delete this album?')) {
       deleteAlbum(albumId);
-    }
-  };
-
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return <Shield className="w-4 h-4" />;
-      case 'creator':
-        return <Camera className="w-4 h-4" />;
-      case 'client':
-        return <UserIcon className="w-4 h-4" />;
-      default:
-        return <UserIcon className="w-4 h-4" />;
     }
   };
 
@@ -306,54 +288,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {activeTab === 'users' && (
-          <div className="space-y-4">
-            {users.map((user) => (
-              <div
-                key={user.id}
-                className="bg-[#1e1e1e] rounded-xl p-6 border-2 border-neutral-800 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                    <span className="font-['Inter'] font-black text-white text-[20px]">
-                      {user.name.charAt(0)}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-['Inter'] font-extrabold text-[18px] text-neutral-100 tracking-[-0.9px]">
-                      {user.name}
-                    </h3>
-                    <p className="font-['Inter'] text-[14px] text-neutral-400">
-                      {user.email}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-4">
-                  <div className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                    user.role === 'admin' 
-                      ? 'bg-red-500/10 text-red-500' 
-                      : user.role === 'creator'
-                      ? 'bg-blue-500/10 text-blue-500'
-                      : 'bg-green-500/10 text-green-500'
-                  }`}>
-                    {getRoleIcon(user.role || '')}
-                    <span className="font-['Inter'] text-[14px] capitalize">
-                      {user.role}
-                    </span>
-                  </div>
-                  
-                  <button
-                    onClick={() => handleDeleteUser(user.id)}
-                    className="p-2 text-neutral-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {activeTab === 'users' && <UserManagement />}
 
         {activeTab === 'albums' && (
           <div className="grid grid-cols-3 gap-6">

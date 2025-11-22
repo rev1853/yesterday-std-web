@@ -88,11 +88,11 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             {user ? (
               <>
-                <div className="flex flex-col items-end">
-                  <p className="font-['Inter'] text-[12px] text-neutral-100">{user.name}</p>
-                  <p className="font-['Inter'] text-[10px] text-neutral-400 capitalize">{user.role}</p>
-                </div>
-                <div className="size-[65px] rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <div className="flex flex-col items-end">
+                <p className="font-['Inter'] text-[12px] text-neutral-100">{user.name}</p>
+                <p className="font-['Inter'] text-[10px] text-neutral-400 capitalize">{user.role}</p>
+              </div>
+              <div className="size-[65px] rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                   <span className="font-['Inter'] font-black text-white text-[24px]">
                     {user.name.charAt(0)}
                   </span>
@@ -106,12 +106,20 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <Link
-                to="/login"
-                className="px-6 py-3 bg-neutral-100 text-[#0d0d0d] rounded-lg font-['Inter'] font-medium hover:bg-neutral-200 transition-colors"
-              >
-                Login
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/login"
+                  className="px-6 py-3 min-w-[120px] text-center bg-neutral-100 text-[#0d0d0d] rounded-lg font-['Inter'] font-medium hover:bg-neutral-200 transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="px-6 py-3 min-w-[120px] text-center border-2 border-neutral-700 text-neutral-100 rounded-lg font-['Inter'] font-medium hover:border-neutral-500 transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </div>
             )}
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Navbar from '../components/Navbar';
@@ -6,9 +6,14 @@ import Footer from '../components/Footer';
 import { Plus, Link2, Download, Eye, Clock, CheckCircle, Calendar, Image as ImageIcon, Users, BarChart3 } from 'lucide-react';
 
 export default function CreatorDashboard() {
-  const { user, albums, submissions, generateInviteLink } = useApp();
+  const { user, albums, submissions, generateInviteLink, refreshData, loading } = useApp();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  useEffect(() => {
+    // Ensure we have the latest albums/submissions when landing here
+    refreshData().catch(() => null);
+  }, [refreshData]);
   
   // Get creator's albums
   const myAlbums = albums.filter(album => album.creatorId === user?.id);
@@ -166,7 +171,11 @@ export default function CreatorDashboard() {
             </div>
           </div>
           
-          {myAlbums.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-20 bg-[#1e1e1e] rounded-xl border-2 border-dashed border-neutral-800">
+              <p className="font-['Inter'] text-[20px] text-neutral-500 mb-2">Loading your albums...</p>
+            </div>
+          ) : myAlbums.length === 0 ? (
             <div className="text-center py-20 bg-[#1e1e1e] rounded-xl border-2 border-dashed border-neutral-800">
               <Plus className="w-16 h-16 text-neutral-700 mx-auto mb-4" />
               <p className="font-['Inter'] text-[20px] text-neutral-500 mb-4">

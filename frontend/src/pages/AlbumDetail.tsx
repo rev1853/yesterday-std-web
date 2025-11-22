@@ -1,18 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Navbar from '../components/Navbar';
 import FullscreenViewer from '../components/FullscreenViewer';
-import { Check, Download, ArrowLeft, Expand } from 'lucide-react';
+import TestimonialForm from '../components/TestimonialForm';
+import TestimonialsList from '../components/TestimonialsList';
+import { Check, ArrowLeft, Expand, MessageSquare, Star } from 'lucide-react';
 
 export default function AlbumDetail() {
   const { albumId } = useParams();
-  const { getAlbum, user, submitSelection } = useApp();
+  const { getAlbum, user, submitSelection, testimonials, addTestimonial, updateTestimonial, submissions } = useApp();
   const navigate = useNavigate();
   const album = getAlbum(albumId || '');
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [showSuccess, setShowSuccess] = useState(false);
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
+  const [showTestimonialForm, setShowTestimonialForm] = useState(false);
 
   if (!album) {
     return (
@@ -46,18 +49,32 @@ export default function AlbumDetail() {
     navigate(-1);
   };
 
-  const handlePhotoClick = (index: number, photoId: string, e: React.MouseEvent) => {
-    if (isClient) {
-      // Client mode: toggle selection
-      togglePhoto(photoId);
-    } else {
-      // Creator/visitor mode: open fullscreen
-      setFullscreenIndex(index);
-    }
-  };
-
   const isCreator = user?.role === 'creator' && album.creatorId === user.id;
   const isClient = user?.role === 'client';
+
+  const existingTestimonial = testimonials.find(
+    t => t.albumId === album.id && t.clientId === user?.id
+  );
+
+  const albumTestimonials = testimonials.filter(t => t.albumId === album.id);
+
+  const hasSubmitted = submissions.some(
+    s => s.albumId === album.id && s.clientId === user?.id
+  );
+
+  const handleTestimonialSubmit = async (rating: number, comment: string) => {
+    if (!user) return;
+
+    if (existingTestimonial) {
+      await updateTestimonial(existingTestimonial.id, {
+        rating,
+        comment,
+      });
+    } else {
+      await addTestimonial(album.id, rating, comment);
+    }
+    setShowTestimonialForm(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#0d0d0d]">
@@ -143,35 +160,26 @@ export default function AlbumDetail() {
                   
                   {isClient ? (
                     <>
-                      {/* Client Mode: Selection overlay + Fullscreen button */}
                       <div 
                         className={`absolute inset-0 transition-all duration-300 cursor-pointer ${
                           isSelected 
                             ? 'bg-blue-500/30 backdrop-blur-[2px]' 
                             : 'bg-black/0 group-hover:bg-black/20'
                         }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          togglePhoto(photo.id);
-                        }}
+                        onClick={() => togglePhoto(photo.id)}
                       />
                       
-                      {/* Selection checkbox */}
                       <div 
                         className={`absolute top-4 right-4 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300 cursor-pointer z-10 ${
                           isSelected
                             ? 'bg-blue-500 border-blue-500'
                             : 'bg-white/20 border-white backdrop-blur-sm'
                         }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          togglePhoto(photo.id);
-                        }}
+                        onClick={() => togglePhoto(photo.id)}
                       >
                         {isSelected && <Check className="w-5 h-5 text-white" />}
                       </div>
 
-                      {/* Fullscreen button */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -185,13 +193,11 @@ export default function AlbumDetail() {
                     </>
                   ) : (
                     <>
-                      {/* Creator/Visitor Mode: Click to fullscreen */}
                       <div 
                         className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 cursor-pointer"
                         onClick={() => setFullscreenIndex(index)}
                       />
                       
-                      {/* Fullscreen icon on hover */}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         <div className="p-4 bg-black/50 backdrop-blur-sm rounded-full">
                           <Expand className="w-8 h-8 text-white" />
@@ -205,6 +211,102 @@ export default function AlbumDetail() {
           })}
         </div>
       </div>
+
+      {/* Testimonial Section - Only for clients who have submitted */}
+      {isClient && hasSubmitted && (
+        <div className="px-[138px] pb-[100px]">
+          <div className="max-w-4xl mx-auto">
+            {!showTestimonialForm && existingTestimonial ? (
+              <div className="bg-[#1e1e1e] rounded-xl p-8 border-2 border-neutral-800">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="p-3 bg-blue-500/10 rounded-lg">
+                      <MessageSquare className="w-6 h-6 text-blue-500" />
+                    </div>
+                    <div>
+                      <h3 className="font-['Inter'] font-extrabold text-[24px] text-neutral-100 tracking-[-1.2px] mb-1">
+                        Your Review
+                      </h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`w-5 h-5 ${
+                              star <= existingTestimonial.rating
+                                ? 'fill-yellow-500 text-yellow-500'
+                                : 'text-neutral-600'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowTestimonialForm(true)}
+                    className="px-4 py-2 bg-[#0d0d0d] hover:bg-neutral-900 text-neutral-300 border-2 border-neutral-800 hover:border-neutral-700 rounded-lg font-['Inter'] font-medium text-[14px] transition-colors"
+                  >
+                    Edit Review
+                  </button>
+                </div>
+                {existingTestimonial.comment && (
+                  <p className="font-['Inter'] text-[16px] text-neutral-300 leading-relaxed">
+                    {existingTestimonial.comment}
+                  </p>
+                )}
+              </div>
+            ) : !showTestimonialForm && !existingTestimonial ? (
+              <div className="bg-[#1e1e1e] rounded-xl p-8 border-2 border-neutral-800">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="p-3 bg-blue-500/10 rounded-lg">
+                      <MessageSquare className="w-6 h-6 text-blue-500" />
+                    </div>
+                    <div>
+                      <h3 className="font-['Inter'] font-extrabold text-[20px] text-neutral-100 tracking-[-1px] mb-1">
+                        Share Your Experience
+                      </h3>
+                      <p className="font-['Inter'] text-[14px] text-neutral-400">
+                        Help others by leaving a review for this album
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowTestimonialForm(true)}
+                    className="px-6 py-3 bg-neutral-100 hover:bg-neutral-200 text-[#0d0d0d] rounded-lg font-['Inter'] font-extrabold text-[16px] tracking-[-0.8px] transition-colors flex items-center gap-2"
+                  >
+                    <MessageSquare className="w-5 h-5" />
+                    Write Review
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <TestimonialForm
+                albumId={album.id}
+                onSubmit={handleTestimonialSubmit}
+                onCancel={() => setShowTestimonialForm(false)}
+                existingTestimonial={existingTestimonial}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Testimonials Display - For creators to view all reviews */}
+      {isCreator && albumTestimonials.length > 0 && (
+        <div className="px-[138px] pb-[100px]">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-8">
+              <h2 className="font-['Inter'] font-extrabold text-[40px] text-neutral-100 tracking-[-2px] mb-2">
+                Client Reviews
+              </h2>
+              <p className="font-['Inter'] text-[16px] text-neutral-400">
+                See what your clients think about this album
+              </p>
+            </div>
+            <TestimonialsList testimonials={albumTestimonials} albumTitle={album.title} />
+          </div>
+        </div>
+      )}
 
       {/* Fullscreen Viewer */}
       {fullscreenIndex !== null && (

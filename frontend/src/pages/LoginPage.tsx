@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Navbar from '../components/Navbar';
 
@@ -99,6 +99,12 @@ export default function LoginPage() {
                   Seeded demo accounts: admin@example.com, creator@example.com, client@example.com (password: password)
                 </p>
               )}
+              <p className="font-['Inter'] text-[12px] text-neutral-400 mt-2">
+                Don't have an account?{' '}
+                <Link to="/signup" className="text-neutral-100 underline">
+                  Sign up
+                </Link>
+              </p>
             </div>
           </form>
         </div>

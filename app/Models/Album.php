@@ -42,6 +42,11 @@ class Album extends Model
         return $this->hasMany(Submission::class);
     }
 
+    public function testimonials()
+    {
+        return $this->hasMany(Testimonial::class);
+    }
+
     public function access()
     {
         return $this->hasMany(AlbumAccess::class);

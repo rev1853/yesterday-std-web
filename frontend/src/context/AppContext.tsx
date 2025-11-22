@@ -41,9 +41,20 @@ export interface Submission {
   status: 'pending' | 'downloaded' | 'completed';
 }
 
+export interface Testimonial {
+  id: string;
+  albumId: string;
+  clientId: string;
+  clientName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
 interface AppContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<User>;
+  signUp: (name: string, email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
   albums: Album[];
   addAlbum: (album: NewAlbumInput) => Promise<Album>;
@@ -53,7 +64,12 @@ interface AppContextType {
   generateInviteLink: (albumId: string) => Promise<string>;
   submissions: Submission[];
   submitSelection: (albumId: string, photoIds: string[]) => Promise<Submission>;
+  testimonials: Testimonial[];
+  addTestimonial: (albumId: string, rating: number, comment: string) => Promise<Testimonial>;
+  updateTestimonial: (id: string, updates: Partial<Pick<Testimonial, 'rating' | 'comment'>>) => Promise<Testimonial>;
+  deleteTestimonial: (id: string) => Promise<void>;
   users: User[];
+  addUser: (user: { name: string; email: string; password: string; role: 'admin' | 'creator' | 'client' }) => Promise<User>;
   updateUser: (id: string, updates: Partial<User>) => Promise<User>;
   deleteUser: (id: string) => Promise<void>;
   refreshData: () => Promise<void>;
@@ -98,11 +114,22 @@ const mapSubmission = (submission: any): Submission => ({
   status: submission.status as Submission['status'],
 });
 
+const mapTestimonial = (testimonial: any): Testimonial => ({
+  id: testimonial.id,
+  albumId: testimonial.album_id,
+  clientId: testimonial.client_id?.toString?.() ?? '',
+  clientName: testimonial.client?.name ?? '',
+  rating: testimonial.rating,
+  comment: testimonial.comment ?? '',
+  createdAt: testimonial.created_at ?? new Date().toISOString(),
+});
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -127,13 +154,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const fetchAll = async (currentUser: User | null = user) => {
     setLoading(true);
     try {
-      const [albumRes, submissionRes] = await Promise.all([
+      const [albumRes, submissionRes, testimonialRes] = await Promise.all([
         api.get('/albums'),
         api.get('/submissions'),
+        api.get('/testimonials'),
       ]);
 
       setAlbums(albumRes.data.map(mapAlbum));
       setSubmissions(submissionRes.data.map(mapSubmission));
+      setTestimonials(testimonialRes.data.map(mapTestimonial));
 
       if (currentUser?.role === 'admin') {
         const { data: usersRes } = await api.get('/users');
@@ -152,6 +181,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return data.user;
   };
 
+  const signUp = async (name: string, email: string, password: string): Promise<User> => {
+    const { data } = await api.post('/auth/register', { name, email, password, role: 'client' });
+    setAuthToken(data.token);
+    setUser(data.user);
+    await fetchAll(data.user);
+    return data.user;
+  };
+
   const logout = async () => {
     try {
       await api.post('/auth/logout');
@@ -163,6 +200,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setAlbums([]);
     setSubmissions([]);
     setUsers([]);
+    setTestimonials([]);
   };
 
   const uploadPhotos = async (albumId: string, files: File[]) => {
@@ -269,9 +307,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return data;
   };
 
+  const addUser = async (userInput: { name: string; email: string; password: string; role: 'admin' | 'creator' | 'client' }) => {
+    const { data } = await api.post('/users', userInput);
+    setUsers(prev => [...prev, data]);
+    return data;
+  };
+
   const deleteUser = async (id: string) => {
     await api.delete(`/users/${id}`);
     setUsers(prev => prev.filter(u => u.id !== id));
+  };
+
+  const addTestimonial = async (albumId: string, rating: number, comment: string) => {
+    const { data } = await api.post(`/albums/${albumId}/testimonials`, {
+      rating,
+      comment,
+    });
+    const mapped = mapTestimonial(data);
+    setTestimonials(prev => {
+      const filtered = prev.filter(
+        t => !(t.albumId === mapped.albumId && t.clientId === mapped.clientId)
+      );
+      return [...filtered, mapped];
+    });
+    return mapped;
+  };
+
+  const updateTestimonial = async (
+    id: string,
+    updates: Partial<Pick<Testimonial, 'rating' | 'comment'>>
+  ) => {
+    const { data } = await api.put(`/testimonials/${id}`, updates);
+    const mapped = mapTestimonial(data);
+    setTestimonials(prev => prev.map(t => (t.id === id ? mapped : t)));
+    return mapped;
+  };
+
+  const deleteTestimonial = async (id: string) => {
+    await api.delete(`/testimonials/${id}`);
+    setTestimonials(prev => prev.filter(t => t.id !== id));
   };
 
   const refreshData = async () => {
@@ -283,6 +357,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         login,
+        signUp,
         logout,
         albums,
         addAlbum,
@@ -292,7 +367,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         generateInviteLink,
         submissions,
         submitSelection,
+        testimonials,
+        addTestimonial,
+        updateTestimonial,
+        deleteTestimonial,
         users,
+        addUser,
         updateUser,
         deleteUser,
         refreshData,

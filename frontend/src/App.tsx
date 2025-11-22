@@ -12,6 +12,7 @@ import CreateAlbum from './pages/CreateAlbum';
 import SubmissionReview from './pages/SubmissionReview';
 import ContactPage from './pages/ContactPage';
 import AlbumsPage from './pages/AlbumsPage';
+import SignupPage from './pages/SignupPage';
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/invitation/:inviteCode" element={<InvitationPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/albums" element={<AlbumsPage />} />
+            <Route path="/signup" element={<SignupPage />} />
           </Routes>
         </Router>
       </ToastProvider>
