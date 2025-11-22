@@ -95,10 +95,13 @@ class PhotoController extends Controller
             return;
         }
 
-        $hasAccess = $album->access()->where('client_id', $user->id)->exists();
-        $hasInvite = ! empty($album->invite_code);
+        if ($album->is_public) {
+            return;
+        }
 
-        if (! $hasAccess && ! $hasInvite) {
+        $hasAccess = $album->access()->where('client_id', $user->id)->exists();
+
+        if (! $hasAccess) {
             abort(403, 'Unauthorized');
         }
     }

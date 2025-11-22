@@ -16,6 +16,7 @@ export default function CreateAlbum() {
   const [date, setDate] = useState('');
   const [photos, setPhotos] = useState<LocalPhoto[]>([]);
   const [photoUrl, setPhotoUrl] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -63,6 +64,7 @@ export default function CreateAlbum() {
       creatorId: user.id,
       creatorName: user.name,
       status: 'active' as const,
+      isPublic,
       photos,
     };
 
@@ -111,6 +113,22 @@ export default function CreateAlbum() {
                 className="w-full px-6 py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-neutral-100 font-['Inter'] focus:outline-none focus:border-neutral-600 transition-colors"
                 required
               />
+            </div>
+
+            <div className="flex items-center justify-between bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl px-6 py-4">
+              <div>
+                <p className="font-['Inter'] font-extrabold text-[16px] text-neutral-100">Public Album</p>
+                <p className="font-['Inter'] text-[14px] text-neutral-400">When public, any client can see it without an invite.</p>
+              </div>
+              <label className="inline-flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isPublic}
+                  onChange={(e) => setIsPublic(e.target.checked)}
+                  className="w-5 h-5 rounded border-neutral-700 bg-[#0d0d0d]"
+                />
+                <span className="font-['Inter'] text-[14px] text-neutral-100">Public</span>
+              </label>
             </div>
 
             <div>

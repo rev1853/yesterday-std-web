@@ -24,9 +24,9 @@ class AlbumController extends Controller
             $accessibleAlbumIds = AlbumAccess::where('client_id', $user->id)->pluck('album_id');
             $submissionAlbumIds = Submission::where('client_id', $user->id)->pluck('album_id');
             $query->where(function ($q) use ($accessibleAlbumIds, $submissionAlbumIds) {
-                $q->whereIn('id', $accessibleAlbumIds)
-                    ->orWhereIn('id', $submissionAlbumIds)
-                    ->orWhereNotNull('invite_code');
+                $q->where('is_public', true)
+                    ->orWhereIn('id', $accessibleAlbumIds)
+                    ->orWhereIn('id', $submissionAlbumIds);
             });
         }
 
@@ -55,6 +55,7 @@ class AlbumController extends Controller
             'event_date' => ['nullable', 'date'],
             'cover_image_url' => ['nullable', 'string', 'max:500'],
             'status' => ['nullable', 'in:active,archived,pending'],
+            'is_public' => ['sometimes', 'boolean'],
         ]);
 
         $album = Album::create([
@@ -77,6 +78,7 @@ class AlbumController extends Controller
             'event_date' => ['sometimes', 'nullable', 'date'],
             'cover_image_url' => ['sometimes', 'nullable', 'string', 'max:500'],
             'status' => ['sometimes', 'in:active,archived,pending'],
+            'is_public' => ['sometimes', 'boolean'],
         ]);
 
         $album->update($data);
@@ -114,6 +116,16 @@ class AlbumController extends Controller
             ->where('invite_code', $code)
             ->firstOrFail();
 
+        $user = $request->user();
+        if ($user && $user->role === 'client') {
+            AlbumAccess::firstOrCreate([
+                'album_id' => $album->id,
+                'client_id' => $user->id,
+            ], [
+                'permission' => 'view',
+            ]);
+        }
+
         return response()->json($album);
     }
 
@@ -137,6 +149,10 @@ class AlbumController extends Controller
             return;
         }
 
+        if ($album->is_public) {
+            return;
+        }
+
         $hasAccess = AlbumAccess::where('album_id', $album->id)
             ->where('client_id', $user->id)
             ->exists();
@@ -145,7 +161,7 @@ class AlbumController extends Controller
             ->where('client_id', $user->id)
             ->exists();
 
-        if (! $hasAccess && ! $hasSubmission && ! $album->invite_code) {
+        if (! $hasAccess && ! $hasSubmission) {
             abort(403, 'Unauthorized');
         }
     }

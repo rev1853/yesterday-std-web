@@ -122,6 +122,7 @@ return new class extends Migration
             $table->index('created_at', 'idx_activity_logs_created');
         });
 
+        DB::statement('DROP VIEW IF EXISTS creator_dashboard_stats');
         DB::statement(<<<SQL
             CREATE VIEW creator_dashboard_stats AS
             SELECT 
@@ -139,6 +140,7 @@ return new class extends Migration
             GROUP BY u.id, u.name
         SQL);
 
+        DB::statement('DROP VIEW IF EXISTS client_dashboard_stats');
         DB::statement(<<<SQL
             CREATE VIEW client_dashboard_stats AS
             SELECT 
@@ -154,6 +156,7 @@ return new class extends Migration
             GROUP BY u.id, u.name
         SQL);
 
+        DB::statement('DROP VIEW IF EXISTS admin_platform_stats');
         DB::statement(<<<SQL
             CREATE VIEW admin_platform_stats AS
             SELECT 

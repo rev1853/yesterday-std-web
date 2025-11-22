@@ -22,6 +22,7 @@ export interface Album {
   photos: Photo[];
   inviteCode?: string;
   status: 'active' | 'archived' | 'pending';
+  isPublic?: boolean;
 }
 
 export interface Photo {
@@ -112,6 +113,7 @@ const mapAlbum = (album: any): Album => ({
   photos: (album.photos ?? []).map(mapPhoto),
   inviteCode: album.invite_code ?? undefined,
   status: (album.status as Album['status']) ?? 'active',
+  isPublic: Boolean(album.is_public),
 });
 
 const mapSubmission = (submission: any): Submission => ({
@@ -236,6 +238,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       event_date: album.date,
       cover_image_url: album.coverImage,
       status: album.status,
+      is_public: album.isPublic ?? false,
     };
     const { data } = await api.post('/albums', payload);
     let mapped = mapAlbum(data);
@@ -280,6 +283,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (album.date !== undefined) payload.event_date = album.date;
     if (album.coverImage !== undefined) payload.cover_image_url = album.coverImage;
     if (album.status !== undefined) payload.status = album.status;
+    if (album.isPublic !== undefined) payload.is_public = album.isPublic;
 
     const { data } = await api.put(`/albums/${id}`, payload);
     const mapped = mapAlbum(data);
@@ -305,13 +309,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const submitSelection = async (albumId: string, photoIds: string[]) => {
-    const { data } = await api.post('/submissions', {
-      album_id: albumId,
-      selected_photos: photoIds,
-    });
-    const mapped = mapSubmission(data);
-    setSubmissions(prev => [...prev, mapped]);
-    return mapped;
+    const existing = submissions.find(
+      s => s.albumId === albumId && s.clientId === user?.id
+    );
+
+    if (existing) {
+      const { data } = await api.put(`/submissions/${existing.id}`, {
+        selected_photos: photoIds,
+      });
+      const mapped = mapSubmission(data);
+      setSubmissions(prev => prev.map(s => (s.id === existing.id ? mapped : s)));
+      return mapped;
+    } else {
+      const { data } = await api.post('/submissions', {
+        album_id: albumId,
+        selected_photos: photoIds,
+      });
+      const mapped = mapSubmission(data);
+      setSubmissions(prev => [...prev, mapped]);
+      return mapped;
+    }
   };
 
   const updateUser = async (id: string, updates: Partial<User>) => {

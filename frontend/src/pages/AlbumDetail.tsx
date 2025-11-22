@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Navbar from '../components/Navbar';
@@ -16,6 +16,16 @@ export default function AlbumDetail() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
+
+  const existingSubmission = submissions.find(
+    s => s.albumId === album?.id && s.clientId === user?.id
+  );
+
+  useEffect(() => {
+    if (existingSubmission) {
+      setSelectedPhotos(new Set(existingSubmission.selectedPhotos));
+    }
+  }, [existingSubmission]);
 
   if (!album) {
     return (
@@ -129,7 +139,7 @@ export default function AlbumDetail() {
               className="px-8 py-3 bg-neutral-100 text-[#0d0d0d] rounded-lg font-['Inter'] font-extrabold text-[16px] tracking-[-0.8px] hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <Check className="w-5 h-5" />
-              Submit Selection
+              {existingSubmission ? 'Update Selection' : 'Submit Selection'}
             </button>
           </div>
         </div>
@@ -304,6 +314,28 @@ export default function AlbumDetail() {
               </p>
             </div>
             <TestimonialsList testimonials={albumTestimonials} albumTitle={album.title} />
+          </div>
+        </div>
+      )}
+
+      {/* Client current selection preview */}
+      {isClient && existingSubmission && (
+        <div className="px-[138px] pb-[60px]">
+          <div className="max-w-6xl mx-auto bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl p-6">
+            <h3 className="font-['Inter'] font-extrabold text-[24px] text-neutral-100 tracking-[-1.2px] mb-4">
+              Your Selection ({existingSubmission.selectedPhotos.length})
+            </h3>
+            <div className="grid grid-cols-4 gap-4">
+              {existingSubmission.selectedPhotos.map((pid) => {
+                const photo = album.photos.find(p => p.id === pid);
+                if (!photo) return null;
+                return (
+                  <div key={pid} className="relative rounded-lg overflow-hidden">
+                    <img src={photo.url} alt="" className="w-full h-32 object-cover" />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

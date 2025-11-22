@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Plus, Link2, Download, Eye, Clock, CheckCircle, Calendar, Image as ImageIcon, Users, BarChart3 } from 'lucide-react';
+import { Plus, Link2, Download, Eye, Clock, CheckCircle, Calendar, Image as ImageIcon, Users, BarChart3, Globe, Lock } from 'lucide-react';
 
 export default function CreatorDashboard() {
   const { user, albums, submissions, generateInviteLink, refreshData, loading } = useApp();
@@ -30,6 +30,10 @@ export default function CreatorDashboard() {
     navigator.clipboard.writeText(inviteUrl);
     setCopiedCode(albumId);
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const togglePublic = async (albumId: string, current?: boolean) => {
+    await updateAlbum(albumId, { isPublic: !current });
   };
 
   const getAlbumSubmissions = (albumId: string) => {
@@ -223,6 +227,10 @@ export default function CreatorDashboard() {
                           <ImageIcon className="w-4 h-4" />
                           <span className="font-['Inter'] text-[12px]">{album.photos.length} photos</span>
                         </div>
+                        <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${album.isPublic ? 'bg-green-500/10 text-green-400' : 'bg-neutral-800 text-neutral-300'}`}>
+                          {album.isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                          <span className="font-['Inter'] text-[12px] capitalize">{album.isPublic ? 'Public' : 'Private'}</span>
+                        </div>
                       </div>
                       
                       {pendingCount > 0 && (
@@ -235,6 +243,14 @@ export default function CreatorDashboard() {
                       )}
 
                       <div className="space-y-2">
+                        <button
+                          onClick={() => togglePublic(album.id, album.isPublic)}
+                          className="w-full py-2 bg-neutral-800 text-neutral-100 rounded-lg font-['Inter'] font-medium text-[14px] hover:bg-neutral-700 transition-colors flex items-center justify-center gap-2"
+                        >
+                          {album.isPublic ? <Lock className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
+                          Set {album.isPublic ? 'Private' : 'Public'}
+                        </button>
+
                         {album.inviteCode ? (
                           <button
                             onClick={() => handleGenerateLink(album.id)}

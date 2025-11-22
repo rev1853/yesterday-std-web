@@ -18,10 +18,12 @@ class Album extends Model
         'cover_image_url',
         'invite_code',
         'status',
+        'is_public',
     ];
 
     protected $casts = [
         'event_date' => 'date',
+        'is_public' => 'boolean',
     ];
 
     public $incrementing = false;
