@@ -6,7 +6,7 @@ import Footer from '../components/Footer';
 import { Plus, Link2, Download, Eye, Clock, CheckCircle, Calendar, Image as ImageIcon, Users, BarChart3, Globe, Lock } from 'lucide-react';
 
 export default function CreatorDashboard() {
-  const { user, albums, submissions, generateInviteLink, refreshData, loading } = useApp();
+  const { user, albums, submissions, generateInviteLink, refreshData, loading, updateAlbum } = useApp();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
