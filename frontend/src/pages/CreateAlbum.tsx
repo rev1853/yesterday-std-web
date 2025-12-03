@@ -91,18 +91,18 @@ export default function CreateAlbum() {
     <div className="min-h-screen bg-[#0d0d0d]">
       <Navbar />
       
-      <div className="pt-[200px] pb-[100px] px-[138px]">
-        <div className="max-w-[800px] mx-auto">
-          <h1 className="font-['Inter'] font-extrabold text-[64px] text-neutral-100 tracking-[-3.2px] mb-4">
+      <div className="pt-[120px] sm:pt-[150px] md:pt-[180px] lg:pt-[200px] pb-[60px] sm:pb-[80px] lg:pb-[100px] px-4 sm:px-8 md:px-16 lg:px-[138px]">
+        <div className="max-w-full sm:max-w-[90%] lg:max-w-[800px] mx-auto">
+          <h1 className="font-['Inter'] font-extrabold text-[32px] sm:text-[48px] md:text-[56px] lg:text-[64px] text-neutral-100 tracking-[-1.6px] sm:tracking-[-2.4px] md:tracking-[-2.8px] lg:tracking-[-3.2px] mb-3 sm:mb-4">
             Create New Album
           </h1>
-          <p className="font-['Inter'] text-[20px] text-neutral-400 tracking-[-1px] mb-12">
+          <p className="font-['Inter'] text-[14px] sm:text-[16px] md:text-[18px] lg:text-[20px] text-neutral-400 tracking-[-0.7px] sm:tracking-[-0.8px] md:tracking-[-0.9px] lg:tracking-[-1px] mb-8 sm:mb-10 lg:mb-12">
             Upload photos and share with your clients
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-7 lg:space-y-8">
             <div>
-              <label className="block font-['Inter'] font-medium text-[16px] text-neutral-100 mb-3">
+              <label className="block font-['Inter'] font-medium text-[13px] sm:text-[14px] lg:text-[16px] text-neutral-100 mb-2 sm:mb-3">
                 Album Title
               </label>
               <input
@@ -110,7 +110,7 @@ export default function CreateAlbum() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Wedding Day - Sarah & John"
-                className="w-full px-6 py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-neutral-100 font-['Inter'] focus:outline-none focus:border-neutral-600 transition-colors"
+                className="w-full px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5 lg:py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-[14px] sm:text-[15px] lg:text-[16px] text-neutral-100 font-['Inter'] focus:outline-none focus:border-neutral-600 transition-colors"
                 required
               />
             </div>
@@ -132,7 +132,7 @@ export default function CreateAlbum() {
             </div>
 
             <div>
-              <label className="block font-['Inter'] font-medium text-[16px] text-neutral-100 mb-3">
+              <label className="block font-['Inter'] font-medium text-[13px] sm:text-[14px] lg:text-[16px] text-neutral-100 mb-2 sm:mb-3">
                 Description
               </label>
               <textarea
@@ -140,60 +140,60 @@ export default function CreateAlbum() {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Brief description of the album..."
                 rows={3}
-                className="w-full px-6 py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-neutral-100 font-['Inter'] focus:outline-none focus:border-neutral-600 transition-colors resize-none"
+                className="w-full px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5 lg:py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-[14px] sm:text-[15px] lg:text-[16px] text-neutral-100 font-['Inter'] focus:outline-none focus:border-neutral-600 transition-colors resize-none"
               />
             </div>
 
             <div>
-              <label className="block font-['Inter'] font-medium text-[16px] text-neutral-100 mb-3">
+              <label className="block font-['Inter'] font-medium text-[13px] sm:text-[14px] lg:text-[16px] text-neutral-100 mb-2 sm:mb-3">
                 Event Date
               </label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-6 py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-neutral-100 font-['Inter'] focus:outline-none focus:border-neutral-600 transition-colors [color-scheme:dark]"
+                className="w-full px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5 lg:py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-[14px] sm:text-[15px] lg:text-[16px] text-neutral-100 font-['Inter'] focus:outline-none focus:border-neutral-600 transition-colors [color-scheme:dark]"
                 required
               />
             </div>
 
             <div>
-              <div className="flex items-end justify-between mb-3">
-                <label className="block font-['Inter'] font-medium text-[16px] text-neutral-100">
+              <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-2 sm:mb-3 gap-2 sm:gap-0">
+                <label className="block font-['Inter'] font-medium text-[13px] sm:text-[14px] lg:text-[16px] text-neutral-100">
                   Photos ({photos.length})
                 </label>
                 <button
                   type="button"
                   onClick={addSamplePhotos}
-                  className="px-4 py-2 bg-neutral-800 text-neutral-100 rounded-lg font-['Inter'] text-[14px] hover:bg-neutral-700 transition-colors"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-neutral-800 text-neutral-100 rounded-lg font-['Inter'] text-[12px] sm:text-[13px] lg:text-[14px] hover:bg-neutral-700 transition-colors"
                 >
                   Add Sample Photos
                 </button>
               </div>
               
-              <div className="flex gap-3 mb-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-3 sm:mb-4">
                 <input
                   type="url"
                   value={photoUrl}
                   onChange={(e) => setPhotoUrl(e.target.value)}
                   placeholder="Enter photo URL..."
-                  className="flex-1 px-6 py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-neutral-100 font-['Inter'] focus:outline-none focus:border-neutral-600 transition-colors"
+                  className="flex-1 px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5 lg:py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-[14px] sm:text-[15px] lg:text-[16px] text-neutral-100 font-['Inter'] focus:outline-none focus:border-neutral-600 transition-colors"
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddPhoto())}
                 />
                 <button
                   type="button"
                   onClick={handleAddPhoto}
-                  className="px-6 py-4 bg-neutral-100 text-[#0d0d0d] rounded-xl font-['Inter'] font-medium hover:bg-neutral-200 transition-colors flex items-center gap-2"
+                  className="px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5 lg:py-4 bg-neutral-100 text-[#0d0d0d] rounded-xl font-['Inter'] font-medium text-[13px] sm:text-[14px] hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                   Add
                 </button>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-3 sm:mb-4">
                 <label className="w-full cursor-pointer">
-                  <div className="px-6 py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-neutral-100 font-['Inter'] hover:border-neutral-600 transition-colors flex items-center justify-center gap-2">
-                    <Upload className="w-5 h-5" />
+                  <div className="px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5 lg:py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-[14px] sm:text-[15px] lg:text-[16px] text-neutral-100 font-['Inter'] hover:border-neutral-600 transition-colors flex items-center justify-center gap-2">
+                    <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span>Select Images from Folder</span>
                   </div>
                   <input
@@ -206,10 +206,10 @@ export default function CreateAlbum() {
                 </label>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-3 sm:mb-4">
                 <label className="w-full cursor-pointer">
-                  <div className="px-6 py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-neutral-100 font-['Inter'] hover:border-neutral-600 transition-colors flex items-center justify-center gap-2">
-                    <Upload className="w-5 h-5" />
+                  <div className="px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5 lg:py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-[14px] sm:text-[15px] lg:text-[16px] text-neutral-100 font-['Inter'] hover:border-neutral-600 transition-colors flex items-center justify-center gap-2">
+                    <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span>Upload Entire Folder</span>
                   </div>
                   <input
@@ -225,13 +225,13 @@ export default function CreateAlbum() {
               </div>
 
               {photos.length > 0 ? (
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {photos.map((photo, index) => (
                     <div key={index} className="relative group">
                       <img
                         src={photo.url}
                         alt={`Photo ${index + 1}`}
-                        className="w-full h-[200px] object-cover rounded-xl"
+                        className="w-full h-[180px] sm:h-[200px] object-cover rounded-xl"
                       />
                       <button
                         type="button"
@@ -256,18 +256,18 @@ export default function CreateAlbum() {
               )}
             </div>
 
-            <div className="flex gap-4 pt-8">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6 sm:pt-8">
               <button
                 type="button"
                 onClick={() => navigate('/creator')}
-                className="flex-1 py-4 bg-neutral-800 text-neutral-100 rounded-xl font-['Inter'] font-medium text-[16px] hover:bg-neutral-700 transition-colors"
+                className="flex-1 py-3 sm:py-4 bg-neutral-800 text-neutral-100 rounded-xl font-['Inter'] font-medium text-[14px] sm:text-[16px] hover:bg-neutral-700 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={photos.length === 0}
-                className="flex-1 py-4 bg-neutral-100 text-[#0d0d0d] rounded-xl font-['Inter'] font-extrabold text-[16px] tracking-[-0.8px] hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 sm:py-4 bg-neutral-100 text-[#0d0d0d] rounded-xl font-['Inter'] font-extrabold text-[14px] sm:text-[16px] tracking-[-0.7px] sm:tracking-[-0.8px] hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Create Album
               </button>

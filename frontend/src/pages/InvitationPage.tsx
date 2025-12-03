@@ -12,9 +12,7 @@ export default function InvitationPage() {
   const album = albums.find(a => a.inviteCode === inviteCode);
 
   useEffect(() => {
-    // If user is not logged in, redirect to login
     if (!user) {
-      // Store the invitation code to redirect after login
       sessionStorage.setItem('pendingInvite', inviteCode || '');
       navigate('/login');
     }
@@ -43,7 +41,6 @@ export default function InvitationPage() {
     );
   }
 
-  // Only clients should be able to access invitations
   if (user && user.role !== 'client') {
     return (
       <div className="min-h-screen bg-[#0d0d0d]">
