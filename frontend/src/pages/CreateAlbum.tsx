@@ -15,7 +15,6 @@ export default function CreateAlbum() {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
   const [photos, setPhotos] = useState<LocalPhoto[]>([]);
-  const [photoUrl, setPhotoUrl] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -34,13 +33,6 @@ export default function CreateAlbum() {
       }));
       setPhotos(prev => [...prev, ...newPhotos]);
       showToast('success', `${fileArray.length} images added successfully!`);
-    }
-  };
-
-  const handleAddPhoto = () => {
-    if (photoUrl.trim()) {
-      setPhotos([...photos, { url: photoUrl.trim() }]);
-      setPhotoUrl('');
     }
   };
 
@@ -178,25 +170,6 @@ export default function CreateAlbum() {
                 </button>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-3 sm:mb-4">
-                <input
-                  type="url"
-                  value={photoUrl}
-                  onChange={(e) => setPhotoUrl(e.target.value)}
-                  placeholder="Enter photo URL..."
-                  className="flex-1 px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5 lg:py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-[14px] sm:text-[15px] lg:text-[16px] text-neutral-100 font-['Inter'] focus:outline-none focus:border-neutral-600 transition-colors"
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddPhoto())}
-                />
-                <button
-                  type="button"
-                  onClick={handleAddPhoto}
-                  className="px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5 lg:py-4 bg-neutral-100 text-[#0d0d0d] rounded-xl font-['Inter'] font-medium text-[13px] sm:text-[14px] hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Add
-                </button>
-              </div>
-
               <div className="mb-3 sm:mb-4">
                 <label className="w-full cursor-pointer">
                   <div className="px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5 lg:py-4 bg-[#1e1e1e] border-2 border-neutral-800 rounded-xl text-[14px] sm:text-[15px] lg:text-[16px] text-neutral-100 font-['Inter'] hover:border-neutral-600 transition-colors flex items-center justify-center gap-2">

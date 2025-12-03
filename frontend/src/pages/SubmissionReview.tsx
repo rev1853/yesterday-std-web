@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Navbar from '../components/Navbar';
+import api from '../lib/api';
 import { Download, Check, ArrowLeft } from 'lucide-react';
 
 export default function SubmissionReview() {
@@ -11,6 +12,7 @@ export default function SubmissionReview() {
   const album = getAlbum(albumId || '');
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   if (!album) {
     return (
@@ -23,14 +25,30 @@ export default function SubmissionReview() {
 
   const albumSubmissions = submissions.filter(sub => sub.albumId === album.id);
 
-  const handleDownload = (submissionId: string) => {
+  const handleDownload = async (submissionId: string) => {
     setSelectedSubmission(submissionId);
+    setDownloadError(null);
     setShowDownloadModal(true);
-    // Simulate download
-    setTimeout(() => {
+    try {
+      const { data } = await api.get(`/submissions/${submissionId}/download`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([data], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `submission-${submissionId}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || 'Failed to download photos';
+      setDownloadError(message);
+    } finally {
       setShowDownloadModal(false);
       setSelectedSubmission(null);
-    }, 2000);
+    }
   };
 
   return (
@@ -128,11 +146,14 @@ export default function SubmissionReview() {
               <Download className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 text-white" />
             </div>
             <h3 className="font-['Inter'] font-extrabold text-[24px] sm:text-[28px] lg:text-[32px] text-neutral-100 tracking-[-1.2px] sm:tracking-[-1.4px] lg:tracking-[-1.6px] mb-3 sm:mb-4">
-              Downloading...
+              Preparing download...
             </h3>
             <p className="font-['Inter'] text-[13px] sm:text-[14px] lg:text-[16px] text-neutral-400">
-              Preparing selected photos for download
+              We are zipping the selected photos.
             </p>
+            {downloadError && (
+              <p className="font-['Inter'] text-[12px] text-red-400 mt-3">{downloadError}</p>
+            )}
           </div>
         </div>
       )}

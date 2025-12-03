@@ -8,8 +8,11 @@ use App\Models\Photo;
 use App\Models\Submission;
 use App\Models\SubmissionPhoto;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use ZipArchive;
 
 class SubmissionController extends Controller
 {
@@ -152,11 +155,40 @@ class SubmissionController extends Controller
         $this->authorizeSubmissionMutation($request, $submission);
 
         $photos = $submission->photos()->get();
+        if ($photos->isEmpty()) {
+            return response()->json(['message' => 'No photos to download'], 400);
+        }
 
-        return response()->json([
-            'submission' => $submission->only(['id', 'status', 'album_id', 'client_id']),
-            'photos' => $photos,
-        ]);
+        $zip = new ZipArchive();
+        $zipName = Str::slug($submission->album->title ?? 'submission').'-'.$submission->id.'.zip';
+        $tempDir = storage_path('app/temp');
+        if (! is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+        $zipPath = $tempDir.'/'.$zipName;
+
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return response()->json(['message' => 'Unable to create archive'], 500);
+        }
+
+        foreach ($photos as $photo) {
+            $relativePath = $photo->getRawOriginal('path') ?? $photo->path;
+            if (! $relativePath) {
+                continue;
+            }
+            $relativePath = ltrim(preg_replace('#^storage/#', '', $relativePath), '/');
+            if (! Storage::exists($relativePath)) {
+                continue;
+            }
+            $absolutePath = Storage::path($relativePath);
+            $zip->addFile($absolutePath, basename($relativePath));
+        }
+
+        $zip->close();
+
+        return response()->download($zipPath, $zipName, [
+            'Content-Type' => 'application/zip',
+        ])->deleteFileAfterSend(true);
     }
 
     private function authorizeSubmissionAccess(Request $request, Submission $submission): void
