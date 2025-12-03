@@ -23,6 +23,7 @@ export interface Album {
   inviteCode?: string;
   status: 'active' | 'archived' | 'pending';
   isPublic?: boolean;
+  photosCount?: number;
 }
 
 export interface Photo {
@@ -117,6 +118,7 @@ const mapAlbum = (album: any): Album => {
   const base = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') ?? 'http://localhost:8000';
   const cover = album.cover_image_url || album.cover_image_full_url;
   const coverImage = cover?.startsWith('http') ? cover : cover ? `${base}/storage/${cover}` : '';
+  const photosCount = album.photos_count ?? (album.photos ? album.photos.length : 0);
 
   return {
     id: album.id,
@@ -130,6 +132,7 @@ const mapAlbum = (album: any): Album => {
     inviteCode: album.invite_code ?? undefined,
     status: (album.status as Album['status']) ?? 'active',
     isPublic: Boolean(album.is_public),
+    photosCount,
   };
 };
 

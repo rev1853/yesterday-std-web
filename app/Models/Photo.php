@@ -72,7 +72,11 @@ class Photo extends Model
             $value = ltrim(Str::after($value, $storageBase), '/');
         }
 
-        return $value;
+        if (Str::startsWith($value, 'storage/')) {
+            $value = Str::after($value, 'storage/');
+        }
+
+        return ltrim($value, '/');
     }
 
     private function buildFullUrl(?string $value): ?string
@@ -81,8 +85,13 @@ class Photo extends Model
             return $value;
         }
 
+        // If value already absolute, return it
         if (Str::startsWith($value, ['http://', 'https://'])) {
             return $value;
+        }
+
+        if (Str::startsWith($value, 'storage/')) {
+            $value = Str::after($value, 'storage/');
         }
 
         $relative = Storage::url($value);

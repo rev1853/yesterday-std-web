@@ -75,7 +75,7 @@ export default function AlbumsPage() {
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       <ImageIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="font-['Inter'] text-[10px] sm:text-[11px] lg:text-[12px]">{album.photos.length} photos</span>
+                      <span className="font-['Inter'] text-[10px] sm:text-[11px] lg:text-[12px]">{album.photosCount ?? album.photos.length} photos</span>
                     </div>
                   </div>
                   {album.description && (

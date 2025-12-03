@@ -16,7 +16,7 @@ class AlbumController extends Controller
     {
         $user = $request->user();
 
-        $query = Album::with(['photos', 'creator']);
+        $query = Album::with(['photos', 'creator'])->withCount('photos');
 
         if ($user->role === 'creator') {
             $query->where('creator_id', $user->id);
@@ -36,7 +36,7 @@ class AlbumController extends Controller
     public function show(Request $request, Album $album)
     {
         $this->authorizeAlbumAccess($request, $album);
-        $album->load(['photos', 'creator', 'submissions']);
+        $album->load(['photos', 'creator', 'submissions'])->loadCount('photos');
 
         return response()->json($album);
     }
@@ -113,6 +113,7 @@ class AlbumController extends Controller
     public function showByInviteCode(Request $request, string $code)
     {
         $album = Album::with(['photos', 'creator'])
+            ->withCount('photos')
             ->where('invite_code', $code)
             ->firstOrFail();
 

@@ -92,7 +92,12 @@ class Album extends Model
             $value = ltrim(Str::after($value, $storageBase), '/');
         }
 
-        return $value;
+        // Remove redundant storage prefixes (e.g., storage/...)
+        if (Str::startsWith($value, 'storage/')) {
+            $value = Str::after($value, 'storage/');
+        }
+
+        return ltrim($value, '/');
     }
 
     private function buildFullUrl(?string $value): ?string
@@ -101,8 +106,14 @@ class Album extends Model
             return $value;
         }
 
+        // If value already absolute, return it
         if (Str::startsWith($value, ['http://', 'https://'])) {
             return $value;
+        }
+
+        // Normalize any leading storage/public prefixes
+        if (Str::startsWith($value, 'storage/')) {
+            $value = Str::after($value, 'storage/');
         }
 
         $relative = Storage::url($value);

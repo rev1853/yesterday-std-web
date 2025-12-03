@@ -212,9 +212,9 @@ export default function ClientDashboard() {
                       </p>
                       <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                         <Camera className="w-3 h-3 sm:w-4 sm:h-4 text-neutral-500" />
-                        <span className="font-['Inter'] text-[11px] sm:text-[12px] text-neutral-500">
-                          {album.photos.length} photos
-                        </span>
+                          <span className="font-['Inter'] text-[11px] sm:text-[12px] text-neutral-500">
+                            {album.photosCount ?? album.photos.length} photos
+                          </span>
                       </div>
                       {submitted && submission && (
                         <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-green-500/10 border border-green-500/30 rounded-lg">
