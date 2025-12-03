@@ -85,6 +85,11 @@ class Photo extends Model
             return $value;
         }
 
-        return Storage::url($value);
+        $relative = Storage::url($value);
+        $base = rtrim(config('app.url'), '/');
+
+        return Str::startsWith($relative, ['http://', 'https://'])
+            ? $relative
+            : $base.$relative;
     }
 }

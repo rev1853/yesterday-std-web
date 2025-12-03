@@ -17,6 +17,7 @@ export default function CreateAlbum() {
   const [photos, setPhotos] = useState<LocalPhoto[]>([]);
   const [photoUrl, setPhotoUrl] = useState('');
   const [isPublic, setIsPublic] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -55,6 +56,8 @@ export default function CreateAlbum() {
     e.preventDefault();
     
     if (!user) return;
+    if (submitting) return;
+    setSubmitting(true);
 
     const newAlbum = {
       title,
@@ -68,9 +71,13 @@ export default function CreateAlbum() {
       photos,
     };
 
-    await addAlbum(newAlbum);
-    navigate('/albums');
-    showToast('success', 'Album created successfully!');
+    try {
+      await addAlbum(newAlbum);
+      navigate('/albums');
+      showToast('success', 'Album created successfully!');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Sample photo URLs for quick demo
@@ -266,10 +273,10 @@ export default function CreateAlbum() {
               </button>
               <button
                 type="submit"
-                disabled={photos.length === 0}
+                disabled={photos.length === 0 || submitting}
                 className="flex-1 py-3 sm:py-4 bg-neutral-100 text-[#0d0d0d] rounded-xl font-['Inter'] font-extrabold text-[14px] sm:text-[16px] tracking-[-0.7px] sm:tracking-[-0.8px] hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Album
+                {submitting ? 'Creating...' : 'Create Album'}
               </button>
             </div>
           </form>
