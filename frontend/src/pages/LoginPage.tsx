@@ -96,12 +96,17 @@ export default function LoginPage() {
                   Seeded demo accounts: admin@example.com, creator@example.com, client@example.com (password: password)
                 </p>
               )}
-              <p className="font-['Inter'] text-[13px] sm:text-[14px] text-neutral-400">
-                Don't have an account?{' '}
-                <Link to="/signup" className="text-neutral-100 hover:underline">
-                  Sign up as a client
+              <div className="flex items-center justify-center gap-3">
+                <p className="font-['Inter'] text-[13px] sm:text-[14px] text-neutral-400">
+                  Don't have an account?
+                </p>
+                <Link
+                  to="/signup"
+                  className="px-4 sm:px-5 py-2 bg-neutral-800 text-neutral-100 rounded-lg font-['Inter'] text-[12px] sm:text-[13px] hover:bg-neutral-700 transition-colors"
+                >
+                  Sign Up
                 </Link>
-              </p>
+              </div>
             </div>
           </form>
         </div>

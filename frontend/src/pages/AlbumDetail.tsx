@@ -7,11 +7,12 @@ import TestimonialForm from '../components/TestimonialForm';
 import TestimonialsList from '../components/TestimonialsList';
 import { Check, ArrowLeft, Expand, MessageSquare, Star } from 'lucide-react';
 
-export default function AlbumDetail() {
-  const { albumId } = useParams();
+export default function AlbumDetail({ overrideAlbumId }: { overrideAlbumId?: string }) {
+  const { albumId: paramAlbumId } = useParams();
   const { getAlbum, user, submitSelection, testimonials, addTestimonial, updateTestimonial, submissions } = useApp();
   const navigate = useNavigate();
-  const album = getAlbum(albumId || '');
+  const targetAlbumId = overrideAlbumId ?? paramAlbumId ?? '';
+  const album = getAlbum(targetAlbumId);
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [showSuccess, setShowSuccess] = useState(false);
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);

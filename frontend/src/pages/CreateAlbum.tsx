@@ -69,7 +69,7 @@ export default function CreateAlbum() {
     };
 
     await addAlbum(newAlbum);
-    navigate('/creator');
+    navigate('/albums');
     showToast('success', 'Album created successfully!');
   };
 

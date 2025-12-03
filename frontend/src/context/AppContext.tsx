@@ -90,11 +90,13 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const mapPhoto = (photo: any): Photo => {
   const base = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') ?? 'http://localhost:8000';
   const raw = photo.url ?? photo.path;
-  const url = raw?.startsWith('http')
-    ? raw
-    : raw
-      ? `${base}/storage/${raw}`
-      : '';
+  // Prefer server-provided full URL; fallback to constructing if only relative is given.
+  const url =
+    raw && raw.startsWith('http')
+      ? raw
+      : raw
+        ? `${base}/storage/${raw}`
+        : '';
 
   return {
     id: photo.id,
