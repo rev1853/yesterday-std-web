@@ -69,6 +69,7 @@ interface AppContextType {
   addTestimonial: (albumId: string, rating: number, comment: string) => Promise<Testimonial>;
   updateTestimonial: (id: string, updates: Partial<Pick<Testimonial, 'rating' | 'comment'>>) => Promise<Testimonial>;
   deleteTestimonial: (id: string) => Promise<void>;
+  fetchAlbumByInvite: (code: string) => Promise<Album>;
   users: User[];
   addUser: (user: { name: string; email: string; password: string; role: 'admin' | 'creator' | 'client' }) => Promise<User>;
   updateUser: (id: string, updates: Partial<User>) => Promise<User>;
@@ -86,13 +87,21 @@ export type NewAlbumInput = Omit<Album, 'id' | 'photos'> & {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const mapPhoto = (photo: any): Photo => ({
-  id: photo.id,
-  url: photo.path?.startsWith('http')
-    ? photo.path
-    : `${import.meta.env.VITE_API_URL?.replace(/\/api$/, '') ?? 'http://localhost:8000'}/storage/${photo.path}`,
-  albumId: photo.album_id,
-});
+const mapPhoto = (photo: any): Photo => {
+  const base = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') ?? 'http://localhost:8000';
+  const raw = photo.url ?? photo.path;
+  const url = raw?.startsWith('http')
+    ? raw
+    : raw
+      ? `${base}/storage/${raw}`
+      : '';
+
+  return {
+    id: photo.id,
+    url,
+    albumId: photo.album_id,
+  };
+};
 
 const mapUser = (apiUser: any): User => ({
   id: apiUser.id?.toString?.() ?? apiUser.id,
@@ -102,19 +111,25 @@ const mapUser = (apiUser: any): User => ({
   avatar: apiUser.avatar_url,
 });
 
-const mapAlbum = (album: any): Album => ({
-  id: album.id,
-  title: album.title,
-  description: album.description ?? '',
-  date: album.event_date ?? '',
-  coverImage: album.cover_image_url ?? '',
-  creatorId: album.creator_id?.toString?.() ?? '',
-  creatorName: album.creator?.name ?? '',
-  photos: (album.photos ?? []).map(mapPhoto),
-  inviteCode: album.invite_code ?? undefined,
-  status: (album.status as Album['status']) ?? 'active',
-  isPublic: Boolean(album.is_public),
-});
+const mapAlbum = (album: any): Album => {
+  const base = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') ?? 'http://localhost:8000';
+  const cover = album.cover_image_url || album.cover_image_full_url;
+  const coverImage = cover?.startsWith('http') ? cover : cover ? `${base}/storage/${cover}` : '';
+
+  return {
+    id: album.id,
+    title: album.title,
+    description: album.description ?? '',
+    date: album.event_date ?? '',
+    coverImage,
+    creatorId: album.creator_id?.toString?.() ?? '',
+    creatorName: album.creator?.name ?? '',
+    photos: (album.photos ?? []).map(mapPhoto),
+    inviteCode: album.invite_code ?? undefined,
+    status: (album.status as Album['status']) ?? 'active',
+    isPublic: Boolean(album.is_public),
+  };
+};
 
 const mapSubmission = (submission: any): Submission => ({
   id: submission.id,
@@ -308,6 +323,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return data.invite_code as string;
   };
 
+  const fetchAlbumByInvite = useCallback(async (code: string) => {
+    const { data } = await api.get(`/albums/code/${code}`);
+    const mapped = mapAlbum(data);
+    setAlbums(prev => {
+      const exists = prev.some(a => a.id === mapped.id);
+      return exists ? prev.map(a => (a.id === mapped.id ? mapped : a)) : [...prev, mapped];
+    });
+    return mapped;
+  }, []);
+
   const submitSelection = async (albumId: string, photoIds: string[]) => {
     const existing = submissions.find(
       s => s.albumId === albumId && s.clientId === user?.id
@@ -396,6 +421,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         deleteAlbum,
         getAlbum,
         generateInviteLink,
+        fetchAlbumByInvite,
         submissions,
         submitSelection,
         testimonials,

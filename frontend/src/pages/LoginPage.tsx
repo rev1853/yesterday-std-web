@@ -19,18 +19,16 @@ export default function LoginPage() {
       const loggedIn = await login(email, password);
       const role = loggedIn.role;
 
-      switch (role) {
-        case 'admin':
-          navigate('/admin');
-          break;
-        case 'creator':
-          navigate('/creator');
-          break;
-        case 'client':
-        default:
-          navigate('/client');
-          break;
+      const pendingInvite = sessionStorage.getItem('pendingInvite');
+      if (pendingInvite && role === 'client') {
+        sessionStorage.removeItem('pendingInvite');
+        navigate(`/invitation/${pendingInvite}`);
+        return;
       }
+
+      if (role === 'admin') navigate('/admin');
+      else if (role === 'creator') navigate('/creator');
+      else navigate('/client');
     } catch (err) {
       setError('Invalid credentials. Try admin@/creator@/client@example.com with password "password".');
     } finally {
