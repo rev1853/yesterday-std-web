@@ -161,16 +161,15 @@ class SubmissionController extends Controller
 
         $zip = new ZipArchive();
         $zipName = Str::slug($submission->album->title ?? 'submission').'-'.$submission->id.'.zip';
-        $tempDir = storage_path('app/temp');
-        if (! is_dir($tempDir)) {
-            mkdir($tempDir, 0755, true);
-        }
-        $zipPath = $tempDir.'/'.$zipName;
+        // Use storage disk to build a temp folder that works across OSes
+        Storage::makeDirectory('temp');
+        $zipPath = Storage::path('temp/'.$zipName);
 
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             return response()->json(['message' => 'Unable to create archive'], 500);
         }
 
+        $addedFiles = 0;
         foreach ($photos as $photo) {
             $relativePath = $photo->getRawOriginal('path') ?? $photo->path;
             if (! $relativePath) {
@@ -181,10 +180,17 @@ class SubmissionController extends Controller
                 continue;
             }
             $absolutePath = Storage::path($relativePath);
-            $zip->addFile($absolutePath, basename($relativePath));
+            if ($zip->addFile($absolutePath, basename($relativePath))) {
+                $addedFiles++;
+            }
         }
 
         $zip->close();
+
+        if ($addedFiles === 0 || ! file_exists($zipPath)) {
+            @unlink($zipPath);
+            return response()->json(['message' => 'Unable to build archive'], 500);
+        }
 
         return response()->download($zipPath, $zipName, [
             'Content-Type' => 'application/zip',

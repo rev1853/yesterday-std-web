@@ -47,9 +47,12 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="h-[48px] w-[44px] sm:h-[56px] sm:w-[50px] lg:h-[68px] lg:w-[61px] shrink-0">
-            <div className="h-full w-full bg-neutral-100 rounded-lg flex items-center justify-center">
-              <span className="font-['Inter'] text-[18px] sm:text-[20px] lg:text-[24px] font-black text-[#0d0d0d]">UP</span>
-            </div>
+            <img
+              src="/logo.png"
+              alt="Logo"
+              className="h-full w-full object-contain"
+              loading="lazy"
+            />
           </Link>
 
           {/* Desktop Navigation */}
