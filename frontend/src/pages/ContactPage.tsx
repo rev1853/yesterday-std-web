@@ -53,10 +53,7 @@ export default function ContactPage() {
                             Email Us
                         </h3>
                         <p className="font-['Inter'] text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-400 mb-1 sm:mb-2">
-                            info@urpictura.com
-                        </p>
-                        <p className="font-['Inter'] text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-400">
-                            support@urpictura.com
+                            yesterday.corp@gmail.com
                         </p>
                     </div>
 
@@ -199,16 +196,8 @@ export default function ContactPage() {
                             </div>
                             <div className="space-y-3 sm:space-y-4">
                                 <div className="flex items-center justify-between font-['Inter'] text-[13px] sm:text-[14px] text-neutral-300">
-                                    <span>Monday - Friday</span>
+                                    <span>Monday - Sunday</span>
                                     <span>9:00 AM - 6:00 PM</span>
-                                </div>
-                                <div className="flex items-center justify-between font-['Inter'] text-[13px] sm:text-[14px] text-neutral-300">
-                                    <span>Saturday</span>
-                                    <span>10:00 AM - 4:00 PM</span>
-                                </div>
-                                <div className="flex items-center justify-between font-['Inter'] text-[13px] sm:text-[14px] text-neutral-300">
-                                    <span>Sunday</span>
-                                    <span>Closed</span>
                                 </div>
                             </div>
 
@@ -217,14 +206,8 @@ export default function ContactPage() {
                                     Follow us on social media
                                 </p>
                                 <div className="flex gap-2 sm:gap-3">
-                                    <a href="#" className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center transition-colors">
+                                    <a target="_blank" href="https://www.instagram.com/yesterday.std?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw== " className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center transition-colors">
                                         <Instagram className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-100" />
-                                    </a>
-                                    <a href="#" className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center transition-colors">
-                                        <Facebook className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-100" />
-                                    </a>
-                                    <a href="#" className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center transition-colors">
-                                        <Twitter className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-100" />
                                     </a>
                                 </div>
                             </div>

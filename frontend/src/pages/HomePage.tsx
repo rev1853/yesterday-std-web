@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import { useApp } from '../context/AppContext';
 import api from '../lib/api';
 import { Camera, CheckCircle, Users, Star, ArrowRight } from 'lucide-react';
+import { formatDate } from '@/utils/date';
 
 type LandingTestimonial = {
     id: string;
@@ -172,7 +173,7 @@ export default function HomePage() {
                                         </p>
                                     )}
                                     <p className="font-['Inter'] text-[12px] sm:text-[13px] lg:text-[14px] text-white tracking-[-0.6px] sm:tracking-[-0.65px] lg:tracking-[-0.7px] mb-2">
-                                        {album.date}
+                                        {formatDate(album.date)}
                                     </p>
                                     <p className="font-['Inter'] text-[11px] sm:text-[12px] text-white/80">
                                         By {album.creatorName}
@@ -207,7 +208,7 @@ export default function HomePage() {
                                             </p>
                                         )}
                                         <p className="font-['Inter'] text-[12px] sm:text-[13px] lg:text-[14px] text-white tracking-[-0.6px] sm:tracking-[-0.65px] lg:tracking-[-0.7px] mb-2">
-                                            {album.date}
+                                            {formatDate(album.date)}
                                         </p>
                                         <p className="font-['Inter'] text-[11px] sm:text-[12px] text-white/80">
                                             By {album.creatorName}

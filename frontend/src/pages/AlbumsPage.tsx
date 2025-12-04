@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Calendar, Image as ImageIcon, Eye, User } from 'lucide-react';
+import { formatDate } from '@/utils/date';
 
 export default function AlbumsPage() {
   const { albums, users } = useApp();
@@ -71,7 +72,7 @@ export default function AlbumsPage() {
                   <div className="flex items-center justify-between text-neutral-400">
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="font-['Inter'] text-[10px] sm:text-[11px] lg:text-[12px]">{album.date}</span>
+                      <span className="font-['Inter'] text-[10px] sm:text-[11px] lg:text-[12px]">{formatDate(album.date)}</span>
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       <ImageIcon className="w-3 h-3 sm:w-4 sm:h-4" />

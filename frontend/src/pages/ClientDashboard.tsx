@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { formatDate } from '@/utils/date';
 import { Camera, CheckCircle, Clock, Search, Filter, Grid3x3, List } from 'lucide-react';
 
 export default function ClientDashboard() {
@@ -205,7 +206,7 @@ export default function ClientDashboard() {
                         </p>
                       )}
                       <p className="font-['Inter'] text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-400 mb-1">
-                        {album.date}
+                        {formatDate(album.date)}
                       </p>
                       <p className="font-['Inter'] text-[11px] sm:text-[12px] text-neutral-500 mb-3 sm:mb-4">
                         By {album.creatorName}
@@ -262,7 +263,7 @@ export default function ClientDashboard() {
                         )}
                       </div>
                       <p className="font-['Inter'] text-[13px] sm:text-[14px] lg:text-[16px] text-neutral-400 mb-2">
-                        By {album.creatorName} • {album.date}
+                        By {album.creatorName} • {formatDate(album.date)}
                       </p>
                       {album.description && (
                         <p className="font-['Inter'] text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-500 mb-3 sm:mb-4 line-clamp-2">

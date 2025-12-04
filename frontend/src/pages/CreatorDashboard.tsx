@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { formatDate } from '@/utils/date';
 import { Plus, Link2, Download, Eye, Clock, CheckCircle, Calendar, Image as ImageIcon, Users, BarChart3 } from 'lucide-react';
 
 export default function CreatorDashboard() {
@@ -246,7 +247,7 @@ export default function CreatorDashboard() {
                                             <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:gap-4 mb-3 sm:mb-4 text-neutral-400">
                                                 <div className="flex items-center gap-1">
                                                     <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                    <span className="font-['Inter'] text-[10px] sm:text-[11px] lg:text-[12px]">{album.date}</span>
+                                                    <span className="font-['Inter'] text-[10px] sm:text-[11px] lg:text-[12px]">{formatDate(album.date)}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <ImageIcon className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -339,7 +340,7 @@ export default function CreatorDashboard() {
                                                 <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6 mb-2 sm:mb-3 text-neutral-400">
                                                     <div className="flex items-center gap-1 sm:gap-2">
                                                         <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                        <span className="font-['Inter'] text-[11px] sm:text-[12px] lg:text-[14px]">{album.date}</span>
+                                                        <span className="font-['Inter'] text-[11px] sm:text-[12px] lg:text-[14px]">{formatDate(album.date)}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1 sm:gap-2">
                                                         <ImageIcon className="w-3 h-3 sm:w-4 sm:h-4" />
