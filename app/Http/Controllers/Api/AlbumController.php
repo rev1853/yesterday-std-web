@@ -65,7 +65,7 @@ class AlbumController extends Controller
 
         $this->logActivity($request, 'create_album', 'album', $album->id, $data);
 
-        return response()->json($album, 201);
+        return response()->json($album->load('creator')->loadCount('photos'), 201);
     }
 
     public function update(Request $request, Album $album)
@@ -85,7 +85,7 @@ class AlbumController extends Controller
 
         $this->logActivity($request, 'update_album', 'album', $album->id, $data);
 
-        return response()->json($album);
+        return response()->json($album->load('creator')->loadCount('photos'));
     }
 
     public function destroy(Request $request, Album $album)
@@ -96,6 +96,25 @@ class AlbumController extends Controller
         $this->logActivity($request, 'delete_album', 'album', $album->id);
 
         return response()->json(['message' => 'Album deleted']);
+    }
+
+    public function publicFeatured(Request $request)
+    {
+        $limit = (int) $request->integer('limit', 6);
+
+        $albums = Album::query()
+            ->where('is_public', true)
+            ->where('status', 'active')
+            ->with(['photos', 'creator'])
+            ->withCount('photos')
+            ->withAvg('testimonials', 'rating')
+            ->orderByDesc('testimonials_avg_rating')
+            ->orderByDesc('photos_count')
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get();
+
+        return response()->json($albums);
     }
 
     public function generateInvite(Request $request, Album $album)

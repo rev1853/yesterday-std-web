@@ -8,7 +8,8 @@ import { formatDate } from '@/utils/date';
 export default function AlbumsPage() {
   const { albums, users } = useApp();
 
-  const getCreatorName = (creatorId: string) => {
+  const getCreatorName = (creatorId: string, fallback?: string) => {
+    if (fallback) return fallback;
     const creator = users.find(u => u.id === creatorId);
     return creator?.name || 'Unknown Creator';
   };
@@ -62,7 +63,7 @@ export default function AlbumsPage() {
                     <div className="flex items-center gap-1.5 sm:gap-2 text-neutral-300">
                       <User className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span className="font-['Inter'] text-[10px] sm:text-[11px] lg:text-[12px]">
-                        {getCreatorName(album.creatorId)}
+                        {getCreatorName(album.creatorId, album.creatorName)}
                       </span>
                     </div>
                   </div>

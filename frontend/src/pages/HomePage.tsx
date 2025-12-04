@@ -6,6 +6,7 @@ import { useApp } from '../context/AppContext';
 import api from '../lib/api';
 import { Camera, CheckCircle, Users, Star, ArrowRight } from 'lucide-react';
 import { formatDate } from '@/utils/date';
+import { Album } from '@/context/AppContext';
 
 type LandingTestimonial = {
     id: string;
@@ -18,21 +19,47 @@ type LandingTestimonial = {
 
 export default function HomePage() {
     const { albums, user } = useApp();
-    const publicAlbums = albums.filter(a => a.status === 'active').slice(0, 6);
+    const [featuredAlbums, setFeaturedAlbums] = useState<Album[]>([]);
     const [testimonials, setTestimonials] = useState<LandingTestimonial[]>([]);
 
     useEffect(() => {
-        const fetchTestimonials = async () => {
+        const fetchPublicData = async () => {
             try {
+                const base = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') ?? 'http://localhost:8000';
+                const albumRes = await api.get('/public/albums/featured', { params: { limit: 6 } });
+                const mappedAlbums: Album[] = albumRes.data.map((album: any) => {
+                    const cover = album.cover_image_url || album.cover_image_full_url;
+                    const coverImage = cover?.startsWith('http') ? cover : cover ? `${base}/storage/${cover}` : '';
+                    const photosCount = album.photos_count ?? (album.photos ? album.photos.length : 0);
+                    return {
+                        id: album.id,
+                        title: album.title,
+                        description: album.description ?? '',
+                        date: album.event_date ?? '',
+                        coverImage,
+                        creatorId: album.creator_id?.toString?.() ?? '',
+                        creatorName: album.creator?.name ?? album.creator_name ?? 'Unknown Creator',
+                        photos: [],
+                        inviteCode: album.invite_code ?? undefined,
+                        status: (album.status as Album['status']) ?? 'active',
+                        isPublic: Boolean(album.is_public),
+                        photosCount,
+                    };
+                });
+                setFeaturedAlbums(mappedAlbums);
+
                 const { data } = await api.get('/public/testimonials', { params: { limit: 6 } });
                 setTestimonials(data);
             } catch (error) {
+                setFeaturedAlbums([]);
                 setTestimonials([]);
             }
         };
 
-        fetchTestimonials();
+        fetchPublicData();
     }, []);
+
+    const publicAlbums = (featuredAlbums.length ? featuredAlbums : albums.filter(a => a.status === 'active')).slice(0, 6);
 
     const features = [
         {

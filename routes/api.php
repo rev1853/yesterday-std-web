@@ -15,6 +15,7 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::get('public/testimonials', [TestimonialController::class, 'publicLatest']);
+Route::get('public/albums/featured', [AlbumController::class, 'publicFeatured']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);

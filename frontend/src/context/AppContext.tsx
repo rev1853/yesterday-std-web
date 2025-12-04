@@ -119,6 +119,7 @@ const mapAlbum = (album: any): Album => {
   const cover = album.cover_image_url || album.cover_image_full_url;
   const coverImage = cover?.startsWith('http') ? cover : cover ? `${base}/storage/${cover}` : '';
   const photosCount = album.photos_count ?? (album.photos ? album.photos.length : 0);
+  const creatorName = album.creator?.name ?? album.creator_name ?? album.creatorName ?? '';
 
   return {
     id: album.id,
@@ -127,7 +128,7 @@ const mapAlbum = (album: any): Album => {
     date: album.event_date ?? '',
     coverImage,
     creatorId: album.creator_id?.toString?.() ?? '',
-    creatorName: album.creator?.name ?? '',
+    creatorName,
     photos: (album.photos ?? []).map(mapPhoto),
     inviteCode: album.invite_code ?? undefined,
     status: (album.status as Album['status']) ?? 'active',
