@@ -83,8 +83,8 @@ export default function ContactPage() {
                             Visit Us
                         </h3>
                         <p className="font-['Inter'] text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-400">
-                            123 Photography Lane<br />
-                            San Francisco, CA 94102
+                            Jalan Raya Sempalwadak<br />
+                            Bululawang, Kab. Malang
                         </p>
                     </div>
                 </div>
