@@ -171,15 +171,30 @@ class SubmissionController extends Controller
 
         $addedFiles = 0;
         foreach ($photos as $photo) {
-            $relativePath = $photo->getRawOriginal('path') ?? $photo->path;
+            $relativePath = $this->resolvePhotoPath($photo);
             if (! $relativePath) {
                 continue;
             }
-            $relativePath = ltrim(preg_replace('#^storage/#', '', $relativePath), '/');
-            if (! Storage::exists($relativePath)) {
+
+            // Prefer "public/..." when files live on the public disk
+            $candidates = [
+                $relativePath,
+                'public/'.$relativePath,
+            ];
+
+            $absolutePath = null;
+            foreach ($candidates as $candidate) {
+                if (Storage::exists($candidate)) {
+                    $absolutePath = Storage::path($candidate);
+                    $relativePath = $candidate;
+                    break;
+                }
+            }
+
+            if (! $absolutePath) {
                 continue;
             }
-            $absolutePath = Storage::path($relativePath);
+
             if ($zip->addFile($absolutePath, basename($relativePath))) {
                 $addedFiles++;
             }
@@ -195,6 +210,28 @@ class SubmissionController extends Controller
         return response()->download($zipPath, $zipName, [
             'Content-Type' => 'application/zip',
         ])->deleteFileAfterSend(true);
+    }
+
+    private function resolvePhotoPath(Photo $photo): ?string
+    {
+        $raw = $photo->getRawOriginal('path') ?? $photo->path;
+        if (! $raw) {
+            return null;
+        }
+
+        // Normalize slashes for Windows paths and strip base URLs
+        $raw = str_replace('\\', '/', $raw);
+        $appUrl = rtrim(config('app.url'), '/');
+        if ($appUrl && str_starts_with($raw, $appUrl)) {
+            $raw = substr($raw, strlen($appUrl));
+        }
+
+        // Drop leading storage/public prefixes or /storage URL segments
+        $raw = ltrim($raw, '/');
+        $raw = preg_replace('#^storage/#', '', $raw);
+        $raw = preg_replace('#^public/#', '', $raw);
+
+        return trim($raw, '/');
     }
 
     private function authorizeSubmissionAccess(Request $request, Submission $submission): void

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { LogOut, Menu, X } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 export default function Navbar() {
   const { user, logout } = useApp();
@@ -48,7 +49,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="h-[48px] w-[44px] sm:h-[56px] sm:w-[50px] lg:h-[68px] lg:w-[61px] shrink-0">
             <img
-              src="/logo.png"
+              src={logo}
               alt="Logo"
               className="h-full w-full object-contain"
               loading="lazy"
