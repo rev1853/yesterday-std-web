@@ -9,6 +9,7 @@ use App\Models\Submission;
 use App\Models\SubmissionPhoto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -193,8 +194,16 @@ class SubmissionController extends Controller
                 }
             }
 
+            // Fallback to public/storage symlink (common on Windows dev setups)
             if (! $absolutePath) {
-                $missing[] = "Photo {$photo->id}: not found (tried: ".implode(', ', $candidates).')';
+                $publicCandidate = public_path('storage/'.$relativePath);
+                if (File::exists($publicCandidate)) {
+                    $absolutePath = $publicCandidate;
+                }
+            }
+
+            if (! $absolutePath) {
+                $missing[] = "Photo {$photo->id}: not found (tried: ".implode(', ', $candidates).', public/storage/'.$relativePath.')';
                 continue;
             }
 
