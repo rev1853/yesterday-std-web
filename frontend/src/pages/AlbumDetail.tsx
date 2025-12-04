@@ -114,10 +114,10 @@ export default function AlbumDetail({ overrideAlbumId }: { overrideAlbumId?: str
             {/* Hero Section */}
             <div className="relative h-[300px] sm:h-[450px] md:h-[550px] lg:h-[720px] mt-[100px] sm:mt-[130px] lg:mt-[175px] overflow-hidden">
                 <div aria-hidden="true" className="absolute inset-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/55 to-black/75" />
-                    <div
-                        className="absolute inset-0 bg-cover bg-center"
-                        style={{ backgroundImage: `url(${album.coverImage})` }}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black/85" />
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${album.coverImage})` }}
                     />
                 </div>
 
