@@ -170,9 +170,11 @@ class SubmissionController extends Controller
         }
 
         $addedFiles = 0;
+        $missing = [];
         foreach ($photos as $photo) {
             $relativePath = $this->resolvePhotoPath($photo);
             if (! $relativePath) {
+                $missing[] = "Photo {$photo->id}: missing path";
                 continue;
             }
 
@@ -192,6 +194,7 @@ class SubmissionController extends Controller
             }
 
             if (! $absolutePath) {
+                $missing[] = "Photo {$photo->id}: not found (tried: ".implode(', ', $candidates).')';
                 continue;
             }
 
@@ -204,7 +207,10 @@ class SubmissionController extends Controller
 
         if ($addedFiles === 0 || ! file_exists($zipPath)) {
             @unlink($zipPath);
-            return response()->json(['message' => 'Unable to build archive'], 500);
+            return response()->json([
+                'message' => 'Unable to build archive; no files were added',
+                'details' => array_slice($missing, 0, 5),
+            ], 500);
         }
 
         return response()->download($zipPath, $zipName, [
