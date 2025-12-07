@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, HashRouter } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import { ToastProvider } from './components/ToastContainer';
 import LoginPage from './pages/LoginPage';
@@ -18,7 +18,7 @@ export default function App() {
   return (
     <AppProvider>
       <ToastProvider>
-        <Router>
+        <HashRouter>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -33,7 +33,7 @@ export default function App() {
             <Route path="/albums" element={<AlbumsPage />} />
             <Route path="/signup" element={<SignupPage />} />
           </Routes>
-        </Router>
+        </HashRouter>
       </ToastProvider>
     </AppProvider>
   );
